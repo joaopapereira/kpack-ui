@@ -1,0 +1,92 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kpack-ui
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: pivotal-kpack-ui
+  namespace: kpack-ui
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kpack-ui-role
+rules:
+  - apiGroups:
+      - build.pivotal.io
+    resources:
+      - builds
+      - builds/status
+      - images
+      - images/status
+      - builders
+      - builders/status
+      - clusterbuilders
+      - clusterbuilders/status
+      - sourceresolvers
+      - sourceresolvers/status
+    verbs:
+      - get
+      - list
+      - watch
+  - apiGroups:
+      - ""
+    resources:
+      - namespaces
+    verbs:
+      - get
+      - list
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: kpack-ui-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kpack-ui-role
+subjects:
+  - kind: ServiceAccount
+    name: pivotal-kpack-ui
+    namespace: kpack-ui
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kpack-ui
+  namespace: kpack-ui
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: kpack-ui
+  template:
+    metadata:
+      labels:
+        app: kpack-ui
+    spec:
+      serviceAccountName: pivotal-kpack-ui
+      containers:
+        - name: ui
+          image: registry.default.svc.cluster.local:5001/node-app@sha256:142415baf7b3175d9bed6e8d72dc966227dfd73d661611a81c094f4b57956024
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kpack-ui-service
+  namespace: kpack-ui
+spec:
+  type: NodePort
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      name: http
+  selector:
+    app: kpack-ui
