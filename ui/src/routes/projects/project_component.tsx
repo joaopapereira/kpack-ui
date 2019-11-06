@@ -1,29 +1,8 @@
+import * as React from "react";
 import ProjectsRepo from "./repository";
-import React from 'react'
+import {Project} from "./project";
 import './style.scss'
 
-export class Build {
-    constructor(id, reason, status) {
-        this.id = id;
-        this.reason = reason;
-        this.status = status;
-    }
-}
-
-export class Image {
-    constructor(tag, lastBuiltTag, builds) {
-        this.tag = tag;
-        this.lastBuiltTag = lastBuiltTag;
-        this.builds = builds;
-    }
-}
-
-export class Project {
-    constructor(name, images) {
-        this.name = name;
-        this.images = images;
-    }
-}
 
 function boxColor(build) {
     switch (build.status.toLowerCase()) {
@@ -43,7 +22,6 @@ const BuildView = (props) => (
         {props.build.id}
     </div>
 );
-
 const ImageView = (props) => (
     <div className="image">
         <div className="name">{props.image.tag}</div>
@@ -55,7 +33,6 @@ const ImageView = (props) => (
         </section>
     </div>
 );
-
 const ProjectView = (props) => (
     <div className="project">
         <div className="title">Project: {props.project.name}</div>
@@ -67,10 +44,10 @@ const ProjectView = (props) => (
     </div>
 );
 
-class Projects extends React.Component {
+class Projects extends React.Component<ProjectsProps, ProjectsState> {
+
     constructor(props) {
         super(props);
-        this.repo = new ProjectsRepo();
         this.state = {
             listOfProjects: []
         };
@@ -82,13 +59,9 @@ class Projects extends React.Component {
     }
 
     reloadProjects() {
-        this.repo.getProjects().then((listOfProjects) => {
+        this.props.projectRepo.getProjects().then((listOfProjects) => {
             this.setState({listOfProjects: listOfProjects});
         });
-    }
-
-    componentWillUnmount() {
-        clearInterval(this.interval);
     }
 
     render() {
@@ -103,4 +76,12 @@ class Projects extends React.Component {
     }
 }
 
-export default Projects
+class ProjectsProps {
+    projectRepo: ProjectsRepo
+}
+
+class ProjectsState {
+    listOfProjects: Project[]
+}
+
+export default Projects;

@@ -5,22 +5,24 @@ const htmlWebpackPlugin = new HtmlWebPackPlugin({
 });
 module.exports = {
     entry: [
-        '@babel/polyfill',
-        './src/index.js',
+        './src/index.jsx',
     ],
     output: {
         filename: 'app.js',
         path: __dirname + '/dist'
     },
+    resolve: {
+        // changed from extensions: [".js", ".jsx"]
+        extensions: [".ts", ".tsx", ".js", ".jsx"]
+    },
     module: {
         rules: [
             {
-                test: /\.js$/,
+                test: /\.(t|j)sx?$/,
                 exclude: /node_modules/,
-                use: {
-                    loader: "babel-loader"
-                }
-            }, {
+                use: {loader: 'awesome-typescript-loader'}
+            },
+            {
                 test: /\.css$/,
                 use: [
                     {
@@ -50,5 +52,6 @@ module.exports = {
     devServer: {
         historyApiFallback: true,
     },
+    devtool: "source-map",
     plugins: [htmlWebpackPlugin]
 };
