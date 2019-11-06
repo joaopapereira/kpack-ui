@@ -1,8 +1,12 @@
+import * as React from "react";
 import ProjectsRepo from "./repository";
-import React from 'react'
 import './style.scss'
 
 export class Build {
+    id: number;
+    reason: string;
+    status: string;
+
     constructor(id, reason, status) {
         this.id = id;
         this.reason = reason;
@@ -11,6 +15,10 @@ export class Build {
 }
 
 export class Image {
+    tag: string;
+    lastBuiltTag: string;
+    builds: Build[];
+
     constructor(tag, lastBuiltTag, builds) {
         this.tag = tag;
         this.lastBuiltTag = lastBuiltTag;
@@ -19,6 +27,9 @@ export class Image {
 }
 
 export class Project {
+    name: string;
+    images: Image[];
+
     constructor(name, images) {
         this.name = name;
         this.images = images;
@@ -67,7 +78,9 @@ const ProjectView = (props) => (
     </div>
 );
 
-class Projects extends React.Component {
+class Projects extends React.Component<ProjectsProps, ProjectsState> {
+    repo: ProjectsRepo;
+
     constructor(props) {
         super(props);
         this.repo = new ProjectsRepo();
@@ -87,10 +100,6 @@ class Projects extends React.Component {
         });
     }
 
-    componentWillUnmount() {
-        clearInterval(this.interval);
-    }
-
     render() {
         return <div>
             <button onClick={this.reloadProjects.bind(this)}>Refresh page</button>
@@ -101,6 +110,14 @@ class Projects extends React.Component {
             </section>
         </div>;
     }
+}
+
+class ProjectsProps {
+
+}
+
+class ProjectsState {
+    listOfProjects: Project[]
 }
 
 export default Projects

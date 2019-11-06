@@ -4,9 +4,9 @@ import {Build, Image, Project} from "./project";
 class ProjectsRepo {
     getProjects() {
         return httpApi.request('get', '/images').then(data => {
-            let allProjects = [];
+            let allProjects: Project[] = [];
             data.forEach((proj) => {
-                let allImages = [];
+                let allImages: Image[] = [];
                 if (proj['images'] != null) {
                     proj['images'].forEach((img) => {
                         let image = new Image(img['tag'], img['lastBuiltTag'], []);

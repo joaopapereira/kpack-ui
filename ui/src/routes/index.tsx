@@ -1,9 +1,10 @@
-import React from 'react'
+import * as React from "react";
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom'
 import Home from './home'
 import NotFound from './notFound'
 import Projects from './projects'
-class AppRouter extends React.Component {
+
+export class AppRouter extends React.Component {
     render() {
         return (
             <Router>
@@ -11,7 +12,7 @@ class AppRouter extends React.Component {
                     <Route exact path='/' component={Home} />
                     <Route
                         path="/projects"
-                        render={props =>
+                        render={ () =>
                             <Projects />
                         }
                     />
@@ -21,4 +22,3 @@ class AppRouter extends React.Component {
         )
     }
 }
-export default AppRouter;
