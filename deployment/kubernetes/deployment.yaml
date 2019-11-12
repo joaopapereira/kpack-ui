@@ -54,15 +54,6 @@ subjects:
     name: pivotal-kpack-ui
     namespace: kpack-ui
 ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: creds
-  namespace: kpack-ui
-type: kubernetes.io/dockerconfigjson
-data:
-  .dockerconfigjson: <CHANGE-ME>
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -78,12 +69,10 @@ spec:
       labels:
         app: kpack-ui
     spec:
-      imagePullSecrets:
-        - name: creds
       serviceAccountName: pivotal-kpack-ui
       containers:
         - name: ui
-          image: docker.pkg.github.com/joaopapereira/kpack-ui/website:0.0.1
+          image: joaopapereira/kpack-ui:0.0.1
           ports:
             - containerPort: 8080
 ---
@@ -110,7 +99,7 @@ metadata:
   namespace: kpack-ui
 spec:
   rules:
-    - host: beam.picorivera.cf-app.com
+    - host: CHANGEME
       http:
         paths:
           - path: /
