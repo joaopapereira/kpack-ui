@@ -1,7 +1,7 @@
 {
   "name": "kpack-ui",
   "version": "1.0.0",
-  "description": "",
+  "description": "Front end for kpack ui",
   "main": "index.js",
   "scripts": {
     "test": "jest",
@@ -9,8 +9,8 @@
     "build": "webpack --mode production",
     "lint": "eslint src/**/*.ts src/**/*.tsx"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Joao Pereira <joaopapereira@gmail.com>",
+  "license": "Apache-2.0",
   "devDependencies": {
     "@types/enzyme": "^3.10.3",
     "@types/jest": "^24.0.22",
