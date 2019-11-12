@@ -45,7 +45,6 @@ const ProjectView = (props) => (
 );
 
 class Projects extends React.Component<ProjectsProps, ProjectsState> {
-
     constructor(props) {
         super(props);
         this.state = {
