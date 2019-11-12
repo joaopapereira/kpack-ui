@@ -1,3 +1,5 @@
+[![Actions Status](https://github.com/joaopapereira/kpack-ui/workflows/CI/badge.svg)](https://github.com/joaopapereira/kpack-ui/actions)
+
 # kpack UI
 
 This application allow the users to, in a visual way, see the
