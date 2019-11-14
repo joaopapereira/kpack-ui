@@ -15,18 +15,22 @@ import (
 )
 
 func NewImageController(k8sClient corev1.CoreV1Interface, kpackClient v1alpha1.BuildV1alpha1Interface) *ImageController {
-	repo := imagesRepo{
+	return &ImageController{
+		ImagesRepo: NewProjectsRepo(k8sClient, kpackClient),
+	}
+}
+
+func NewProjectsRepo(k8sClient corev1.CoreV1Interface, kpackClient v1alpha1.BuildV1alpha1Interface) *ProjectsRepo {
+	repo := ProjectsRepo{
 		k8sClient: k8sClient,
 		imgClient: kpackClient,
 	}
-	return &ImageController{
-		ImagesRepo: repo,
-	}
+	return &repo
 }
 
 type ImageController struct {
 	beego.Controller
-	ImagesRepo imagesRepo
+	ImagesRepo *ProjectsRepo
 }
 
 func (c *ImageController) Get() {
@@ -44,12 +48,12 @@ type errorMessage struct {
 	Error string `json:"error"`
 }
 
-type imagesRepo struct {
+type ProjectsRepo struct {
 	k8sClient corev1.CoreV1Interface
 	imgClient v1alpha1.BuildV1alpha1Interface
 }
 
-func (i *imagesRepo) GetAll() ([]Project, error) {
+func (i *ProjectsRepo) GetAll() ([]Project, error) {
 	allNamespaces, err := i.k8sClient.Namespaces().List(metav1.ListOptions{})
 	if err != nil {
 		return nil, errors.Wrap(err, "retrieving from namespace")

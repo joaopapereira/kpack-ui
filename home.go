@@ -6,7 +6,6 @@ type HomeController struct {
 	beego.Controller
 }
 
-
 func (c *HomeController) Get() {
 	c.TplName = "index.html"
 }
