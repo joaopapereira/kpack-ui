@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React from 'react';
 
-const Loading = (): ReactNode => <div>loading</div>;
+const Loading = (): React.ReactNode => <div>loading</div>;
 export default Loading;

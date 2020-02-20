@@ -36,6 +36,7 @@ func test(t *testing.T, when spec.G, it spec.S) {
 		})
 		var invalidNamespaces = []string{"ingress-nginx", "pks-something", "kpack", "kpack-ui", "kube-node", "default"}
 		for _, namespace := range invalidNamespaces {
+			namespace := namespace
 			it(fmt.Sprintf("returns empty when namespace %s is the only namespace", namespace), func() {
 				k8sClientFake.CoreV1().Namespaces().Create(&v1.Namespace{
 					ObjectMeta: v12.ObjectMeta{

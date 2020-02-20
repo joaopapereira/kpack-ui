@@ -27,9 +27,15 @@ func main() {
 	)
 	if os.Getenv("LOCAL_START") != "" {
 		clusterConfig, err = retrieveLocalConfiguration()
+		if err != nil {
+			log.Fatalf("unable to retrieve local configuration: %s", err.Error())
+		}
 		beego.SetStaticPath("/", "ui/dist")
 	} else {
 		clusterConfig, err = retrieveClusterConfiguration()
+		if err != nil {
+			log.Fatalf("unable to retrieve cluster configuration: %s", err.Error())
+		}
 	}
 
 	kpackClientSet, err := versioned.NewForConfig(clusterConfig)
