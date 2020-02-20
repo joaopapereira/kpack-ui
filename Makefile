@@ -1,17 +1,17 @@
 go_source_files := $(wildcard **/*.go)
-ts_source_files := $(wildcard ui/src/*/*.ts)
-tsx_source_files := $(wildcard ui/src/*/*.tsx)
+ts_source_files := $(wildcard web/src/*/*.ts)
+tsx_source_files := $(wildcard web/src/*/*.tsx)
 GOCMD?=go
 
 .PHONY: all
 
-all: build-backend build-ui
+all: build-backend build_web
 
 start-local: all
 	LOCAL_START=1 bin/kpack-ui
 
-build-ui: $(ts_source_files) $(tsx_source_files) ui/package.json ui-deps
-	cd ui && npm run build
+build_web: $(ts_source_files) $(tsx_source_files) web/package.json web_deps
+	cd web && npm run build
 
 build-backend: $(go_source_files)
 	mkdir -p bin
@@ -20,17 +20,17 @@ build-backend: $(go_source_files)
 docker:
 	docker build -t kpack-ui .
 
-ui-deps:
-	cd ui && npm install
+web_deps:
+	cd web && npm install
 
 
-unit-test: unit-test-go unit-test-ui
+unit-test: unit-test-go unit_test_web
 
 unit-test-go:
 	go test ./...
 
-unit-test-ui: ui-deps
-	cd ui && npm test
+unit_test_web: web_deps
+	cd web && npm test
 
 install-goimports:
 	@echo "> Installing goimports..."
@@ -48,11 +48,11 @@ lint: install-golangci-lint
 	@echo "> Linting code..."
 	@golangci-lint run -c golangci.yaml
 
-lint: lint-go lint-ui
+lint: lint_go lint_web
 
-lint-ui: ui-deps
-	cd ui && npm run lint
+lint_web: web_deps
+	cd web && npm run lint
 
-lint-go: install-golangci-lint
+lint_go: install-golangci-lint
 	@echo "> Linting code..."
 	@golangci-lint run -c golangci.yaml
