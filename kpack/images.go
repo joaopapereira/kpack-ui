@@ -7,11 +7,11 @@ import (
 
 	"github.com/astaxie/beego"
 	bv1alpha1 "github.com/pivotal/kpack/pkg/apis/build/v1alpha1"
+	v1alpha12 "github.com/pivotal/kpack/pkg/apis/core/v1alpha1"
 	"github.com/pivotal/kpack/pkg/client/clientset/versioned/typed/build/v1alpha1"
 	"github.com/pkg/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
-	duckv1alpha1 "knative.dev/pkg/apis/duck/v1alpha1"
 )
 
 func NewImageController(k8sClient corev1.CoreV1Interface, kpackClient v1alpha1.BuildV1alpha1Interface) *ImageController {
@@ -117,7 +117,7 @@ func buildReasons(build bv1alpha1.Build) string {
 }
 
 func buildState(build bv1alpha1.Build) string {
-	succeeded := build.Status.GetCondition(duckv1alpha1.ConditionSucceeded)
+	succeeded := build.Status.GetCondition(v1alpha12.ConditionSucceeded)
 	switch {
 	case succeeded.IsTrue():
 		return "Succeeded"

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/pivotal/kpack/pkg/apis/build/v1alpha1"
+	corev1alpha1 "github.com/pivotal/kpack/pkg/apis/core/v1alpha1"
 	kpack "github.com/pivotal/kpack/pkg/client/clientset/versioned/fake"
 	"github.com/sclevine/spec"
 	"github.com/stretchr/testify/assert"
@@ -12,7 +13,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	k8s "k8s.io/client-go/kubernetes/fake"
-	duckv1alpha1 "knative.dev/pkg/apis/duck/v1alpha1"
 
 	kpack2 "kpackui/kpack"
 )
@@ -95,10 +95,10 @@ func test(t *testing.T, when spec.G, it spec.S) {
 						},
 					},
 					Status: v1alpha1.BuildStatus{
-						Status: duckv1alpha1.Status{
-							Conditions: duckv1alpha1.Conditions{
+						Status: corev1alpha1.Status{
+							Conditions: corev1alpha1.Conditions{
 								{
-									Type:   duckv1alpha1.ConditionSucceeded,
+									Type:   corev1alpha1.ConditionSucceeded,
 									Status: v1.ConditionTrue,
 								},
 							},
