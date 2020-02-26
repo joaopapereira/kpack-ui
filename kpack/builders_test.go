@@ -1,6 +1,7 @@
 package kpack_test
 
 import (
+	v1 "k8s.io/api/core/v1"
 	"testing"
 
 	"github.com/pivotal/kpack/pkg/apis/build/v1alpha1"
@@ -10,7 +11,6 @@ import (
 	"github.com/sclevine/spec"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	v1 "k8s.io/api/core/v1"
 	v12 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	kpack2 "kpackui/kpack"
@@ -22,8 +22,10 @@ func TestBuilders(t *testing.T) {
 
 func testBuilders(t *testing.T, when spec.G, it spec.S) {
 	var (
-		fakeClient = kpack.NewSimpleClientset()
-		subject    = kpack2.NewBuilderRepo(fakeClient.BuildV1alpha1(), fakeClient.ExperimentalV1alpha1())
+		fakeClient         = kpack.NewSimpleClientset()
+		experimentalClient = fakeClient.ExperimentalV1alpha1()
+		kpackClient        = fakeClient.BuildV1alpha1()
+		subject            = kpack2.NewBuilderRepo(kpackClient, experimentalClient)
 	)
 
 	when("#GetAllCustomClusterBuilders", func() {
@@ -34,19 +36,8 @@ func testBuilders(t *testing.T, when spec.G, it spec.S) {
 		})
 
 		when("custom builders are present", func() {
-			const namespace = "nice-namespace"
-			it.Before(func() {
-				var err error
-				_, err = k8sClientFake.CoreV1().Namespaces().Create(&v1.Namespace{
-					ObjectMeta: v12.ObjectMeta{
-						Name: namespace,
-					},
-				})
-				require.NoError(t, err)
-			})
-
-			it("returns projects with an image when namespace as an images", func() {
-				var _, err = fakeClient.ExperimentalV1alpha1().CustomClusterBuilders().Create(&v1alpha12.CustomClusterBuilder{
+			it("returns builder with an image when builder was built successfully", func() {
+				var _, err = experimentalClient.CustomClusterBuilders().Create(&v1alpha12.CustomClusterBuilder{
 					ObjectMeta: v12.ObjectMeta{
 						Name: "custom-builder",
 					},
@@ -55,7 +46,19 @@ func testBuilders(t *testing.T, when spec.G, it spec.S) {
 							Tag:   "some/custom-builder:tag",
 							Stack: "io.buildpacks.java",
 							Store: "some/store:tag",
-							Order: nil,
+							Order: []v1alpha12.OrderEntry{
+								{
+									Group: []v1alpha12.BuildpackRef{
+										{
+											BuildpackInfo: v1alpha12.BuildpackInfo{
+												Id:      "io.buildpack.java",
+												Version: "1.0.0",
+											},
+											Optional: false,
+										},
+									},
+								},
+							},
 						},
 					},
 					Status: v1alpha12.CustomBuilderStatus{
@@ -63,32 +66,146 @@ func testBuilders(t *testing.T, when spec.G, it spec.S) {
 							Status: corev1alpha1.Status{
 								ObservedGeneration: 0,
 								Conditions: []corev1alpha1.Condition{
+									{
+										Type:   v1alpha1.ConditionBuilderReady,
+										Status: v1.ConditionTrue,
+									},
 								},
 							},
-							BuilderMetadata: nil,
-							Stack:           v1alpha1.BuildStack{},
-							LatestImage:     "",
+							BuilderMetadata: v1alpha1.BuildpackMetadataList{
+								{
+									Id:      "io.buildpack.java",
+									Version: "1.0.0",
+								},
+							},
+							Stack: v1alpha1.BuildStack{
+								RunImage: "some/stack:image",
+								ID:       "io.buildpacks.stack",
+							},
+							LatestImage: "some/custom-builder:tag@098223ad",
 						},
 					},
 				})
 				require.NoError(t, err)
 
-				projects, err := subject.GetAll()
+				builders, err := subject.GetAllCustomClusterBuilders()
 				require.NoError(t, err)
-				require.Len(t, projects, 1)
-				require.Len(t, projects[0].Images, 1)
-				assert.Equal(t, kpack2.Image{
-					Name:         "nice-image",
-					Tag:          "some/image:tag",
-					LastBuiltTag: "some/image:tag@sha256:123123123",
-					Builds: []kpack2.Build{
-						{
-							Reason: "CONFIG",
-							Status: "Succeeded",
-							ID:     "1",
+				require.Len(t, builders, 1)
+				assert.Equal(t, builders[0].Image, "some/custom-builder:tag@098223ad")
+				assert.Equal(t, builders[0].Tag, "some/custom-builder:tag")
+				assert.Equal(t, builders[0].Stack, "some/stack:image")
+				assert.Equal(t, builders[0].Store, "some/store:tag")
+				assert.Equal(t, builders[0].Buildpacks, []kpack2.Buildpack{
+					{
+						Id:      "io.buildpack.java",
+						Version: "1.0.0",
+					},
+				})
+				assert.True(t, builders[0].BuiltSuccess)
+			})
+
+			it("returns builder without an image when builder failed to build", func() {
+				var _, err = experimentalClient.CustomClusterBuilders().Create(&v1alpha12.CustomClusterBuilder{
+					ObjectMeta: v12.ObjectMeta{
+						Name: "custom-builder",
+					},
+					Spec: v1alpha12.CustomClusterBuilderSpec{
+						CustomBuilderSpec: v1alpha12.CustomBuilderSpec{
+							Tag:   "some/custom-builder:tag",
+							Stack: "io.buildpacks.java",
+							Store: "some/store:tag",
+							Order: []v1alpha12.OrderEntry{
+								{
+									Group: []v1alpha12.BuildpackRef{
+										{
+											BuildpackInfo: v1alpha12.BuildpackInfo{
+												Id:      "io.buildpack.java",
+												Version: "1.0.0",
+											},
+											Optional: false,
+										},
+									},
+								},
+							},
 						},
 					},
-				}, projects[0].Images[0])
+					Status: v1alpha12.CustomBuilderStatus{
+						BuilderStatus: v1alpha1.BuilderStatus{
+							Status: corev1alpha1.Status{
+								ObservedGeneration: 0,
+								Conditions: []corev1alpha1.Condition{
+									{
+										Type:   v1alpha1.ConditionBuilderReady,
+										Status: v1.ConditionFalse,
+									},
+								},
+							},
+						},
+					},
+				})
+				require.NoError(t, err)
+
+				builders, err := subject.GetAllCustomClusterBuilders()
+				require.NoError(t, err)
+				require.Len(t, builders, 1)
+				assert.Equal(t, builders[0].Image, "")
+				assert.Equal(t, builders[0].Tag, "some/custom-builder:tag")
+				assert.Equal(t, builders[0].Stack, "")
+				assert.Equal(t, builders[0].Store, "some/store:tag")
+				assert.Nil(t, builders[0].Buildpacks)
+				assert.False(t, builders[0].BuiltSuccess)
+			})
+
+			it("returns builder without an image when builder still hasnt finished building", func() {
+				var _, err = experimentalClient.CustomClusterBuilders().Create(&v1alpha12.CustomClusterBuilder{
+					ObjectMeta: v12.ObjectMeta{
+						Name: "custom-builder",
+					},
+					Spec: v1alpha12.CustomClusterBuilderSpec{
+						CustomBuilderSpec: v1alpha12.CustomBuilderSpec{
+							Tag:   "some/custom-builder:tag",
+							Stack: "io.buildpacks.java",
+							Store: "some/store:tag",
+							Order: []v1alpha12.OrderEntry{
+								{
+									Group: []v1alpha12.BuildpackRef{
+										{
+											BuildpackInfo: v1alpha12.BuildpackInfo{
+												Id:      "io.buildpack.java",
+												Version: "1.0.0",
+											},
+											Optional: false,
+										},
+									},
+								},
+							},
+						},
+					},
+					Status: v1alpha12.CustomBuilderStatus{
+						BuilderStatus: v1alpha1.BuilderStatus{
+							Status: corev1alpha1.Status{
+								ObservedGeneration: 0,
+								Conditions: []corev1alpha1.Condition{
+									{
+										Type:   v1alpha1.ConditionBuilderReady,
+										Status: v1.ConditionUnknown,
+									},
+								},
+							},
+						},
+					},
+				})
+				require.NoError(t, err)
+
+				builders, err := subject.GetAllCustomClusterBuilders()
+				require.NoError(t, err)
+				require.Len(t, builders, 1)
+				assert.Equal(t, builders[0].Image, "")
+				assert.Equal(t, builders[0].Tag, "some/custom-builder:tag")
+				assert.Equal(t, builders[0].Stack, "")
+				assert.Equal(t, builders[0].Store, "some/store:tag")
+				assert.Nil(t, builders[0].Buildpacks)
+				assert.False(t, builders[0].BuiltSuccess)
 			})
 		})
 	})
