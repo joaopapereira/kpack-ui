@@ -27,6 +27,7 @@ import (
 
 	"kpackui/gui"
 	"kpackui/k8s"
+	"kpackui/static"
 )
 
 const preferenceCurrentTab = "currentTab"
@@ -71,9 +72,24 @@ func main() {
 
 func selectContext(a fyne.App, getter gui.ContextGetter) {
 	w := a.NewWindow("Kpack gui - Context Selector")
-	gui.ContextSelector(w, getter, func(name string) {
+	contextSelector := gui.NewContextSelector()
+	contextSelector.Show(w, getter, func(name string) {
 		displayKpackForContext(a, getter, name)
 		w.Close()
+	}, func(err error) {
+		w.SetContent(
+			fyne.NewContainerWithLayout(
+				layout.NewGridLayoutWithColumns(1),
+				widget.NewLabelWithStyle("Error: Retrieving contexts", fyne.TextAlignLeading, fyne.TextStyle{
+					Bold:      true,
+				}),
+				fyne.NewContainerWithLayout(
+					layout.NewGridLayoutWithColumns(2),
+					widget.NewIcon(static.SadEmojiIcon()),
+					widget.NewLabel(err.Error()),
+				),
+			),
+		)
 	})
 	w.ShowAndRun()
 }
@@ -114,7 +130,7 @@ func displayKpackForContext(a fyne.App, getter gui.ContextGetter, context string
 	w.Show()
 }
 
-type unauthorized struct {}
+type unauthorized struct{}
 
 func (u unauthorized) Error() string {
 	return "not authorized"

@@ -56,3 +56,11 @@ lint_web: web_deps
 lint_go: install-golangci-lint
 	@echo "> Linting code..."
 	@golangci-lint run -c golangci.yaml
+
+generate_icons: fyne_app_installed
+	@echo "> Regenerating icon resources..."
+	@fyne bundle -package static -prefix icon static/icons/ > static/bundled-icons.go
+
+fyne_app_installed:
+	@echo "> Installing fyne app..."
+	@go get fyne.io/fyne/cmd/fyne
