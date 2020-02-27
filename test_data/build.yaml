@@ -1,0 +1,14 @@
+apiVersion: build.pivotal.io/v1alpha1
+kind: Build
+metadata:
+  name: sample
+spec:
+  tags:
+  - sample/image
+  serviceAccount: serviceaccount
+  builder:
+    image: cloudfoundry/cnb:bionic
+  source:
+    git:
+      url: https://github.com/buildpack/sample-java-app.git
+      revision: master
