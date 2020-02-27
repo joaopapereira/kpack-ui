@@ -27,7 +27,6 @@ import (
 
 	"kpackui/gui"
 	"kpackui/k8s"
-	"kpackui/static"
 )
 
 const preferenceCurrentTab = "currentTab"
@@ -78,17 +77,7 @@ func selectContext(a fyne.App, getter gui.ContextGetter) {
 		w.Close()
 	}, func(err error) {
 		w.SetContent(
-			fyne.NewContainerWithLayout(
-				layout.NewGridLayoutWithColumns(1),
-				widget.NewLabelWithStyle("Error: Retrieving contexts", fyne.TextAlignLeading, fyne.TextStyle{
-					Bold:      true,
-				}),
-				fyne.NewContainerWithLayout(
-					layout.NewGridLayoutWithColumns(2),
-					widget.NewIcon(static.SadEmojiIcon()),
-					widget.NewLabel(err.Error()),
-				),
-			),
+			gui.ErrorContainer(err),
 		)
 	})
 	w.ShowAndRun()
