@@ -7,6 +7,7 @@ var (
 )
 
 func init() {
+	//nolint:SA1019
 	iconSadEmoji = theme.NewThemedResource(iconEmojisadPng, nil)
 }
 

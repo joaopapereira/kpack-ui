@@ -8,7 +8,7 @@ import (
 )
 
 type Buildpack struct {
-	Id      string
+	ID      string
 	Version string
 }
 
@@ -21,20 +21,20 @@ type CustomClusterBuilder struct {
 	Buildpacks   []Buildpack
 }
 
-func NewBuilderRepo(kpackClient b_v1alpha1.BuildV1alpha1Interface, experimentalKpackClient e_v1alpha1.ExperimentalV1alpha1Interface) *builderRepo {
-	repo := builderRepo{
+func NewBuilderRepo(kpackClient b_v1alpha1.BuildV1alpha1Interface, experimentalKpackClient e_v1alpha1.ExperimentalV1alpha1Interface) *BuilderRepo {
+	repo := BuilderRepo{
 		buildClient:        kpackClient,
 		experimentalClient: experimentalKpackClient,
 	}
 	return &repo
 }
 
-type builderRepo struct {
+type BuilderRepo struct {
 	buildClient        b_v1alpha1.BuildV1alpha1Interface
 	experimentalClient e_v1alpha1.ExperimentalV1alpha1Interface
 }
 
-func (b builderRepo) GetAllCustomClusterBuilders() ([]CustomClusterBuilder, error) {
+func (b BuilderRepo) GetAllCustomClusterBuilders() ([]CustomClusterBuilder, error) {
 	builders, err := b.experimentalClient.CustomClusterBuilders().List(v1.ListOptions{})
 	if err != nil {
 		return nil, err
@@ -51,7 +51,7 @@ func (b builderRepo) GetAllCustomClusterBuilders() ([]CustomClusterBuilder, erro
 			var buildpacks []Buildpack
 			for _, metadata := range builder.Status.BuilderMetadata {
 				buildpacks = append(buildpacks, Buildpack{
-					Id:      metadata.Id,
+					ID:      metadata.Id,
 					Version: metadata.Version,
 				})
 			}

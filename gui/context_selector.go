@@ -26,15 +26,15 @@ func SelectContext(a fyne.App, getter ContextGetter, onContextSelected func(stri
 	return w
 }
 
-func NewContextSelector() *contextSelector {
-	return &contextSelector{}
+func NewContextSelector() *ContextSelector {
+	return &ContextSelector{}
 }
 
-type contextSelector struct {
+type ContextSelector struct {
 	contextButtons []*widget.Button
 }
 
-func (c *contextSelector) Show(win fyne.Window, contextGetter ContextGetter, onContextSelected func(string), onError func(error)) {
+func (c *ContextSelector) Show(win fyne.Window, contextGetter ContextGetter, onContextSelected func(string), onError func(error)) {
 	contexts, err := contextGetter.GetAll()
 	if err != nil {
 		onError(errors.Wrap(err, "on context select"))

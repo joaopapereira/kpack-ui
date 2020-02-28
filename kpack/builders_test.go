@@ -1,8 +1,9 @@
 package kpack_test
 
 import (
-	v1 "k8s.io/api/core/v1"
 	"testing"
+
+	v1 "k8s.io/api/core/v1"
 
 	"github.com/pivotal/kpack/pkg/apis/build/v1alpha1"
 	corev1alpha1 "github.com/pivotal/kpack/pkg/apis/core/v1alpha1"
@@ -97,7 +98,7 @@ func testBuilders(t *testing.T, when spec.G, it spec.S) {
 				assert.Equal(t, builders[0].Store, "some/store:tag")
 				assert.Equal(t, builders[0].Buildpacks, []kpack2.Buildpack{
 					{
-						Id:      "io.buildpack.java",
+						ID:      "io.buildpack.java",
 						Version: "1.0.0",
 					},
 				})

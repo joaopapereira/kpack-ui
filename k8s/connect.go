@@ -12,7 +12,6 @@ import (
 	"github.com/pkg/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
@@ -42,9 +41,8 @@ func ConnectToCluster(context string) (kpackui.KpackConnectionManager, error) {
 		if k8serrors.IsUnauthorized(errors.Cause(err)) {
 			log.Printf("cluster unauthorized: %s", err.Error())
 			return nil, errors.Wrap(err, "retrieve cluster cluster info")
-		} else {
-			return nil, errors.Wrap(err, "error retrieving information from the cluster")
 		}
+		return nil, errors.Wrap(err, "error retrieving information from the cluster")
 	}
 
 	return &connectionManager{

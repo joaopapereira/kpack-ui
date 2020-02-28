@@ -6,16 +6,16 @@ type CustomClusterBuilderRepo interface {
 	GetAllCustomClusterBuilders() ([]kpack.CustomClusterBuilder, error)
 }
 
-func NewCustomClusterGetter(repo CustomClusterBuilderRepo) *customClusterGetter {
-	return &customClusterGetter{
+func NewCustomClusterGetter(repo CustomClusterBuilderRepo) *CustomClusterGetter {
+	return &CustomClusterGetter{
 		repo: repo,
 	}
 }
 
-type customClusterGetter struct {
+type CustomClusterGetter struct {
 	repo CustomClusterBuilderRepo
 }
 
-func (c *customClusterGetter) GetAll() ([]kpack.CustomClusterBuilder, error) {
+func (c *CustomClusterGetter) GetAll() ([]kpack.CustomClusterBuilder, error) {
 	return c.repo.GetAllCustomClusterBuilders()
 }
