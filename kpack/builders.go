@@ -59,9 +59,8 @@ func (b builderRepo) GetAllCustomClusterBuilders() ([]CustomClusterBuilder, erro
 			customBuilder.BuiltSuccess = true
 			customBuilder.Image = builder.Status.LatestImage
 			customBuilder.Stack = builder.Status.Stack.RunImage
-		} else {
-
 		}
+
 		customBuilders = append(customBuilders, customBuilder)
 	}
 

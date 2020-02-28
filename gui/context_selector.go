@@ -11,18 +11,19 @@ type ContextGetter interface {
 	GetAll() ([]string, error)
 }
 
-func SelectContext(a fyne.App, getter ContextGetter) {
+func SelectContext(a fyne.App, getter ContextGetter, onContextSelected func(string), onError func(error) *fyne.Container) fyne.Window {
 	w := a.NewWindow("Kpack gui - Context Selector")
 	contextSelector := NewContextSelector()
 	contextSelector.Show(w, getter, func(name string) {
-		displayKpackForContext(a, getter, name)
+		onContextSelected(name)
 		w.Close()
 	}, func(err error) {
 		w.SetContent(
-			ErrorContainer(err),
+			onError(err),
 		)
 	})
 	w.ShowAndRun()
+	return w
 }
 
 func NewContextSelector() *contextSelector {

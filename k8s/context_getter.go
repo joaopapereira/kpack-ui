@@ -17,7 +17,7 @@ func (c contextGetter) GetAll() ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	allContextNames := []string{}
+	var allContextNames []string
 	for name := range config.Contexts {
 		allContextNames = append(allContextNames, name)
 	}

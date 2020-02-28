@@ -1,12 +1,8 @@
 package gui
 
 import (
-	"flag"
 	"fmt"
-	"log"
 	"net/url"
-	"os"
-	"path/filepath"
 
 	"fyne.io/fyne"
 	"fyne.io/fyne/canvas"
@@ -15,90 +11,51 @@ import (
 	"fyne.io/fyne/layout"
 	"fyne.io/fyne/theme"
 	"fyne.io/fyne/widget"
-	"github.com/pivotal/kpack/pkg/client/clientset/versioned"
-	"github.com/pkg/errors"
-	k8serrors "k8s.io/apimachinery/pkg/api/errors"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	_ "k8s.io/client-go/plugin/pkg/client/auth/oidc"
-	"k8s.io/client-go/tools/clientcmd"
-	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
+
+	"kpackui"
 )
 
 const preferenceCurrentTab = "currentTab"
 
-func ShowKpack(context string, w fyne.Window, a fyne.App, getter ContextGetter) {
-	go func() {
-		if connectToCluster(context) != nil {
-			w.SetContent(widget.NewVBox(
-				widget.NewLabel(fmt.Sprintf("Not authorized to connect to %s cluster", context)),
-				widget.NewButton("Select a different cluster", func() {
-					SelectContext(a, getter)
-					w.Close()
-				})))
-			return
-		}
-
-		tabs := widget.NewTabContainer(
-			widget.NewTabItemWithIcon("Welcome", theme.HomeIcon(), welcomeScreen(a)),
-		)
-		tabs.SetTabLocation(widget.TabLocationLeading)
-		tabs.SelectTabIndex(a.Preferences().Int(preferenceCurrentTab))
-		w.SetContent(tabs)
-		a.Preferences().SetInt(preferenceCurrentTab, tabs.CurrentTabIndex())
-	}()
+func NewKpackMainView(getter ContextGetter, connectionBuilder func(context string) (kpackui.KpackConnectionManager, error)) *KpackMainView {
+	return &KpackMainView{
+		getter:            getter,
+		connectionBuilder: connectionBuilder,
+	}
 }
 
-func connectToCluster(context string) error {
-	cfg, err := retrieveLocalConfiguration()
-	if err != nil {
-		log.Fatalf("unable to retrieve local config: %s", err.Error())
-	}
-
-	clientCfg := clientcmd.NewNonInteractiveClientConfig(*cfg, context, &clientcmd.ConfigOverrides{}, nil)
-	cliCfg, err := clientCfg.ClientConfig()
-	if err != nil {
-		log.Fatalf("unable to retrieve client config: %s", err.Error())
-	}
-	clientCfg.Namespace()
-
-	kpackClientSet, err := versioned.NewForConfig(cliCfg)
-	if err != nil {
-		log.Fatalf("unable to create kpack client set: %s", err.Error())
-	}
-
-	builders, err := kpackClientSet.ExperimentalV1alpha1().CustomClusterBuilders().List(v1.ListOptions{})
-	if err != nil {
-		if k8serrors.IsUnauthorized(errors.Cause(err)) {
-			log.Printf("cluster unauthorized: %s", err.Error())
-			return unauthorized{}
-		} else {
-			log.Fatalf("unable to retrieve builders: %s", err.Error())
-		}
-	}
-	for _, builder := range builders.Items {
-		log.Printf("builder: %s", builder.Name)
-	}
-
-	return nil
+type KpackMainView struct {
+	getter            ContextGetter
+	connectionManager kpackui.KpackConnectionManager
+	connectionBuilder func(_ string) (kpackui.KpackConnectionManager, error)
 }
 
-func retrieveLocalConfiguration() (*clientcmdapi.Config, error) {
-	var kubeconfig *string
-	if home := homeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
-	}
-	flag.Parse()
+func (v *KpackMainView) LoadUI(a fyne.App, context string, onConnectionFailure func()) {
+	var err error
+	w := a.NewWindow(fmt.Sprintf("Kpack gui - %s", context))
 
-	return clientcmd.LoadFromFile(*kubeconfig)
-}
+	ShowSpinner(w, fmt.Sprintf("connecting to the %s cluster", context))
 
-func homeDir() string {
-	if h := os.Getenv("HOME"); h != "" {
-		return h
+	w.Show()
+
+	v.connectionManager, err = v.connectionBuilder(context)
+	if err != nil {
+		w.SetContent(widget.NewVBox(
+			widget.NewLabel(fmt.Sprintf("Not authorized to connect to %s cluster", context)),
+			widget.NewButton("Select a different cluster", func() {
+				onConnectionFailure()
+				w.Hide()
+			})))
+		return
 	}
-	return os.Getenv("USERPROFILE") // windows
+
+	tabs := widget.NewTabContainer(
+		widget.NewTabItemWithIcon("Welcome", theme.HomeIcon(), welcomeScreen(a)),
+	)
+	tabs.SetTabLocation(widget.TabLocationLeading)
+	tabs.SelectTabIndex(a.Preferences().Int(preferenceCurrentTab))
+	w.SetContent(tabs)
+	a.Preferences().SetInt(preferenceCurrentTab, tabs.CurrentTabIndex())
 }
 
 func welcomeScreen(a fyne.App) fyne.CanvasObject {
@@ -130,12 +87,6 @@ func welcomeScreen(a fyne.App) fyne.CanvasObject {
 	)
 }
 
-type unauthorized struct{}
-
-func (u unauthorized) Error() string {
-	return "not authorized"
-}
-
 func fyneDemo(a fyne.App) {
 	w := a.NewWindow("Fyne Demo")
 	w.SetMainMenu(fyne.NewMainMenu(fyne.NewMenu("File",
@@ -160,14 +111,4 @@ func fyneDemo(a fyne.App) {
 
 	w.ShowAndRun()
 	a.Preferences().SetInt(preferenceCurrentTab, tabs.CurrentTabIndex())
-}
-
-func displayKpackForContext(a fyne.App, getter ContextGetter, context string) {
-	w := a.NewWindow(fmt.Sprintf("Kpack gui - %s", context))
-
-	ShowSpinner(w, fmt.Sprintf("connecting to the %s cluster", context))
-
-	ShowKpack(context, w, a, getter)
-
-	w.Show()
 }
