@@ -14,6 +14,7 @@ type Buildpack struct {
 
 type CustomClusterBuilder struct {
 	BuiltSuccess bool
+	Name         string
 	Tag          string
 	Image        string
 	Stack        string
@@ -46,6 +47,7 @@ func (b BuilderRepo) GetAllCustomClusterBuilders() ([]CustomClusterBuilder, erro
 		customBuilder := CustomClusterBuilder{
 			Tag:   builder.Spec.Tag,
 			Store: builder.Spec.Store,
+			Name:  builder.Name,
 		}
 		if builder.Status.GetCondition(v1alpha1.ConditionBuilderReady).IsTrue() {
 			var buildpacks []Buildpack
