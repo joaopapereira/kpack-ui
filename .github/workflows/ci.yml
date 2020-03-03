@@ -26,6 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
+    - name: OpenGL Output for source code commit
+      uses: NishkarshRaj/Computer-Graphics@0.1
     - uses: actions/setup-go@v1
       with:
         go-version: '1.13'
