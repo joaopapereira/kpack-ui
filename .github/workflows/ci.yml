@@ -12,15 +12,15 @@ jobs:
         node-version: '10.x'
     - name: install node dependencies
       run: |
-        pushd ui
+        pushd web
         npm install
     - name: run linter
       run: |
-        pushd ui
+        pushd web
         npm run lint
     - name: run tests
       run: |
-        pushd ui
+        pushd web
         npm run test
   test_backend:
     runs-on: ubuntu-latest
