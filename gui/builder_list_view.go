@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"image/color"
 	"log"
 
 	"fyne.io/fyne"
@@ -8,11 +9,14 @@ import (
 	"fyne.io/fyne/layout"
 	"fyne.io/fyne/theme"
 	"fyne.io/fyne/widget"
-	"image/color"
 
 	"kpackui/builder"
-	"kpackui/kpack"
 )
+
+type KpackBuilder interface {
+	Name() string
+	Tag() string
+}
 
 func NewBuildersScreen(getter *builder.CustomClusterGetter) fyne.CanvasObject {
 	builders, err := getter.GetAll()
@@ -22,92 +26,103 @@ func NewBuildersScreen(getter *builder.CustomClusterGetter) fyne.CanvasObject {
 	container := fyne.NewContainerWithLayout(layout.NewGridLayout(3))
 
 	for _, clusterBuilder := range builders {
-		success := newBuilderSuccessBox(clusterBuilder)
-		success.build()
 		container.AddObject(
-			success,
+			&builderSuccessWidget{
+				builder: &clusterBuilder,
+			},
 		)
 	}
 
 	return container
 }
 
-type builderBox struct {
-	widget.Box
+var (
+	green = &color.RGBA{R: 0, G: 128, B: 0, A: 255}
+)
+
+type builderSuccessWidget struct {
+	widget.BaseWidget
 	background color.Color
-	builder    kpack.CustomClusterBuilder
+	builder    KpackBuilder
 }
 
-func (b *builderBox) build() {
-	b.Children = append(b.Children,
-		fyne.NewContainerWithLayout(layout.NewFixedGridLayout(fyne.NewSize(160, 70)),
-			widget.NewScrollContainer(fyne.NewContainerWithLayout(
-				layout.NewGridLayout(1),
-				widget.NewLabel(b.builder.Name),
-				widget.NewLabel(b.builder.Tag),
-			)),
-		),
-	)
+func (b *builderSuccessWidget) MinSize() fyne.Size {
+	b.ExtendBaseWidget(b)
+	return b.BaseWidget.MinSize()
 }
 
-func (b *builderBox) CreateRenderer() fyne.WidgetRenderer {
+func (b *builderSuccessWidget) Refresh() {
+	b.background = green
+
+	b.BaseWidget.Refresh()
+}
+
+func (b *builderSuccessWidget) CreateRenderer() fyne.WidgetRenderer {
 	b.ExtendBaseWidget(b)
 
-	return &boxRenderer{objects: b.Children, layout: layout.NewVBoxLayout(), box: b}
-}
-
-func newBuilderSuccessBox(builder kpack.CustomClusterBuilder) *builderBox {
-	return &builderBox{
-		Box: widget.Box{
-			BaseWidget: widget.BaseWidget{},
-			Horizontal: false,
+	name := canvas.NewText(b.builder.Name(), color.Black)
+	tag := canvas.NewText(b.builder.Tag(), color.Black)
+	background := canvas.NewRectangle(green)
+	return &builderWidgetRenderer{
+		builderName: name,
+		builderTag:  tag,
+		objects: []fyne.CanvasObject{
+			background,
+			name,
+			tag,
 		},
-		background: color.RGBA{
-			R: 0xff,
-			G: 0x0,
-			B: 0x0,
-			A: 0xff,
-		},
-		builder: builder,
+		background: background,
+		builderWidget: b,
 	}
 }
 
-type boxRenderer struct {
-	layout fyne.Layout
+type builderWidgetRenderer struct {
+	builderTag  *canvas.Text
+	builderName *canvas.Text
+	background  *canvas.Rectangle
 
+	builderWidget *builderSuccessWidget
 	objects []fyne.CanvasObject
-	box     *builderBox
 }
 
-func (b *boxRenderer) MinSize() fyne.Size {
-	return b.layout.MinSize(b.objects)
+func (b *builderWidgetRenderer) MinSize() fyne.Size {
+	return fyne.NewSize(160+theme.Padding()*2, 70+theme.Padding()*2)
 }
 
-func (b *boxRenderer) Layout(size fyne.Size) {
-	b.layout.Layout(b.objects, size)
+func (b *builderWidgetRenderer) Layout(size fyne.Size) {
+	inner := size.Subtract(fyne.NewSize(theme.Padding()*2, theme.Padding()*2))
+	b.background.Resize(inner)
+	b.background.Move(fyne.NewPos(0, 0))
+
+	textSize := int(float32(size.Height) * .1)
+	textMin := fyne.CurrentApp().Driver().RenderedTextSize(b.builderName.Text, textSize, fyne.TextStyle{Bold: false})
+	b.builderName.TextSize = textSize
+	b.builderName.Resize(fyne.NewSize(size.Width, textMin.Height))
+	b.builderName.Move(fyne.NewPos(0, textMin.Height))
+
+	textMin = fyne.CurrentApp().Driver().RenderedTextSize(b.builderTag.Text, textSize, fyne.TextStyle{Bold: false})
+	b.builderTag.TextSize = textSize
+	b.builderTag.Resize(fyne.NewSize(size.Width, textMin.Height))
+	b.builderTag.Move(fyne.NewPos(0, size.Height-textMin.Height))
 }
 
-func (b *boxRenderer) BackgroundColor() color.Color {
-	if b.box.background == nil {
-		return theme.BackgroundColor()
+func (b *builderWidgetRenderer) BackgroundColor() color.Color {
+	if b.builderWidget.background == nil {
+		return green
 	}
 
-	return b.box.background
+	return b.builderWidget.background
 }
 
-func (b *boxRenderer) Objects() []fyne.CanvasObject {
+func (b *builderWidgetRenderer) Objects() []fyne.CanvasObject {
 	return b.objects
 }
 
-func (b *boxRenderer) Refresh() {
-	b.objects = b.box.Children
-	for _, child := range b.objects {
-		child.Refresh()
-	}
-	b.Layout(b.box.Size())
+func (b *builderWidgetRenderer) Refresh() {
+	b.Layout(b.builderWidget.Size())
 
-	canvas.Refresh(b.box)
+	canvas.Refresh(b.builderWidget)
 }
 
-func (b *boxRenderer) Destroy() {
+func (b *builderWidgetRenderer) Destroy() {
 }

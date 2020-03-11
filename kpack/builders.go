@@ -14,12 +14,20 @@ type Buildpack struct {
 
 type CustomClusterBuilder struct {
 	BuiltSuccess bool
-	Name         string
-	Tag          string
+	name         string
+	tag          string
 	Image        string
 	Stack        string
 	Store        string
 	Buildpacks   []Buildpack
+}
+
+func (b *CustomClusterBuilder) Name() string {
+	return b.name
+}
+
+func (b *CustomClusterBuilder) Tag() string {
+	return b.tag
 }
 
 func NewBuilderRepo(kpackClient b_v1alpha1.BuildV1alpha1Interface, experimentalKpackClient e_v1alpha1.ExperimentalV1alpha1Interface) *BuilderRepo {
@@ -45,9 +53,9 @@ func (b BuilderRepo) GetAllCustomClusterBuilders() ([]CustomClusterBuilder, erro
 
 	for _, builder := range builders.Items {
 		customBuilder := CustomClusterBuilder{
-			Tag:   builder.Spec.Tag,
+			tag:   builder.Spec.Tag,
 			Store: builder.Spec.Store,
-			Name:  builder.Name,
+			name:  builder.Name,
 		}
 		if builder.Status.GetCondition(v1alpha1.ConditionBuilderReady).IsTrue() {
 			var buildpacks []Buildpack
