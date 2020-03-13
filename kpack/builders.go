@@ -57,6 +57,7 @@ func (b BuilderRepo) GetAllCustomClusterBuilders() ([]CustomClusterBuilder, erro
 			Store: builder.Spec.Store,
 			name:  builder.Name,
 		}
+
 		if builder.Status.GetCondition(v1alpha1.ConditionBuilderReady).IsTrue() {
 			var buildpacks []Buildpack
 			for _, metadata := range builder.Status.BuilderMetadata {

@@ -23,13 +23,17 @@ func NewBuildersScreen(getter *builder.CustomClusterGetter) fyne.CanvasObject {
 	if err != nil {
 		log.Fatalf("cannot retrieve custom builders: %s", err.Error())
 	}
-	container := fyne.NewContainerWithLayout(layout.NewGridLayout(3))
+	container := fyne.NewContainerWithLayout(layout.NewGridLayout(1))
 
 	for _, clusterBuilder := range builders {
+		var builderWidget *builderWidget
+		if clusterBuilder.BuiltSuccess {
+			builderWidget = newSuccessBuilder(&clusterBuilder)
+		} else {
+			builderWidget = newErrorBuilder(&clusterBuilder)
+		}
 		container.AddObject(
-			&builderSuccessWidget{
-				builder: &clusterBuilder,
-			},
+			builderWidget,
 		)
 	}
 
@@ -38,31 +42,51 @@ func NewBuildersScreen(getter *builder.CustomClusterGetter) fyne.CanvasObject {
 
 var (
 	green = &color.RGBA{R: 0, G: 128, B: 0, A: 255}
+	red   = &color.RGBA{R: 128, G: 0, B: 0, A: 255}
 )
 
-type builderSuccessWidget struct {
+func newSuccessBuilder(builder KpackBuilder) *builderWidget {
+	return &builderWidget{
+		builder:    builder,
+		background: green,
+		textColor: color.Black,
+	}
+}
+
+func newErrorBuilder(builder KpackBuilder) *builderWidget {
+	return &builderWidget{
+		builder:    builder,
+		background: red,
+		textColor: color.White,
+	}
+}
+
+type builderWidget struct {
 	widget.BaseWidget
 	background color.Color
+	textColor  color.Color
 	builder    KpackBuilder
 }
 
-func (b *builderSuccessWidget) MinSize() fyne.Size {
+func (b *builderWidget) MinSize() fyne.Size {
 	b.ExtendBaseWidget(b)
 	return b.BaseWidget.MinSize()
 }
 
-func (b *builderSuccessWidget) Refresh() {
-	b.background = green
+func (b *builderWidget) Refresh() {
+	if b.background == nil {
+		b.background = green
+	}
 
 	b.BaseWidget.Refresh()
 }
 
-func (b *builderSuccessWidget) CreateRenderer() fyne.WidgetRenderer {
+func (b *builderWidget) CreateRenderer() fyne.WidgetRenderer {
 	b.ExtendBaseWidget(b)
 
-	name := canvas.NewText(b.builder.Name(), color.Black)
-	tag := canvas.NewText(b.builder.Tag(), color.Black)
-	background := canvas.NewRectangle(green)
+	name := canvas.NewText(b.builder.Name(), b.textColor)
+	tag := canvas.NewText(b.builder.Tag(), b.textColor)
+	background := canvas.NewRectangle(b.background)
 	return &builderWidgetRenderer{
 		builderName: name,
 		builderTag:  tag,
@@ -71,7 +95,7 @@ func (b *builderSuccessWidget) CreateRenderer() fyne.WidgetRenderer {
 			name,
 			tag,
 		},
-		background: background,
+		background:    background,
 		builderWidget: b,
 	}
 }
@@ -81,8 +105,8 @@ type builderWidgetRenderer struct {
 	builderName *canvas.Text
 	background  *canvas.Rectangle
 
-	builderWidget *builderSuccessWidget
-	objects []fyne.CanvasObject
+	builderWidget *builderWidget
+	objects       []fyne.CanvasObject
 }
 
 func (b *builderWidgetRenderer) MinSize() fyne.Size {
