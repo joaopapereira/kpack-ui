@@ -10,15 +10,20 @@ import (
 	"fyne.io/fyne/theme"
 	"fyne.io/fyne/widget"
 
-	"kpackui/builder"
+	"kpackui/kpack"
 )
 
 type KpackBuilder interface {
 	Name() string
 	Tag() string
+	BuiltSuccessful() bool
 }
 
-func NewBuildersScreen(getter *builder.CustomClusterGetter) fyne.CanvasObject {
+type clusterBuilderGetter interface {
+	GetAll() ([]kpack.ClusterBuilder, error)
+}
+
+func NewBuildersScreen(getter clusterBuilderGetter) fyne.CanvasObject {
 	builders, err := getter.GetAll()
 	if err != nil {
 		log.Fatalf("cannot retrieve custom builders: %s", err.Error())
@@ -27,7 +32,7 @@ func NewBuildersScreen(getter *builder.CustomClusterGetter) fyne.CanvasObject {
 
 	for _, clusterBuilder := range builders {
 		var builderWidget *builderWidget
-		if clusterBuilder.BuiltSuccess {
+		if clusterBuilder.BuiltSuccessful() {
 			builderWidget = newSuccessBuilder(&clusterBuilder)
 		} else {
 			builderWidget = newErrorBuilder(&clusterBuilder)
@@ -49,7 +54,7 @@ func newSuccessBuilder(builder KpackBuilder) *builderWidget {
 	return &builderWidget{
 		builder:    builder,
 		background: green,
-		textColor: color.Black,
+		textColor:  color.Black,
 	}
 }
 
@@ -57,7 +62,7 @@ func newErrorBuilder(builder KpackBuilder) *builderWidget {
 	return &builderWidget{
 		builder:    builder,
 		background: red,
-		textColor: color.White,
+		textColor:  color.White,
 	}
 }
 

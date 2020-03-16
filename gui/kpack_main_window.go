@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"fyne.io/fyne"
+	"fyne.io/fyne/layout"
 	"fyne.io/fyne/theme"
 	"fyne.io/fyne/widget"
 
@@ -13,6 +14,7 @@ import (
 )
 
 const preferenceCurrentTab = "currentTab"
+const builderCurrentTab = "currentTab"
 
 func NewKpackMainView(getter ContextGetter, connectionBuilder func(context string) (kpackui.KpackConnectionManager, error)) *KpackMainView {
 	return &KpackMainView{
@@ -46,17 +48,38 @@ func (v *KpackMainView) LoadUI(a fyne.App, context string, onConnectionFailure f
 		return
 	}
 
+	builderRepo := kpack.NewBuilderRepo(
+		v.connectionManager.GetKpack(),
+		v.connectionManager.GetExperimentalKpack(),
+	)
+
 	tabs := widget.NewTabContainer(
 		widget.NewTabItemWithIcon("Builders", theme.HomeIcon(),
-			NewBuildersScreen(
-				builder.NewCustomClusterGetter(
-					kpack.NewBuilderRepo(v.connectionManager.GetKpack(),
-						v.connectionManager.GetExperimentalKpack())))),
+			builderMenu(a, builderRepo),
+		),
 	)
 	tabs.SetTabLocation(widget.TabLocationLeading)
 	tabs.SelectTabIndex(a.Preferences().Int(preferenceCurrentTab))
 	w.SetContent(tabs)
 	a.Preferences().SetInt(preferenceCurrentTab, tabs.CurrentTabIndex())
+}
+
+func builderMenu(app fyne.App, builderRepo *kpack.BuilderRepo) *fyne.Container {
+	tabs := widget.NewTabContainer(
+		widget.NewTabItem("Custom Cluster", NewBuildersScreen(
+			builder.NewCustomClusterGetter(
+				builderRepo))),
+		widget.NewTabItem("Cluster", NewBuildersScreen(
+			builder.NewClusterGetter(
+				builderRepo))),
+	)
+	tabs.SetTabLocation(widget.TabLocationLeading)
+	tabs.SelectTabIndex(app.Preferences().Int(builderCurrentTab))
+
+	app.Preferences().SetInt(builderCurrentTab, tabs.CurrentTabIndex())
+	return fyne.NewContainerWithLayout(layout.NewBorderLayout(nil, nil, nil, nil),
+		tabs,
+	)
 }
 
 //func welcomeScreen(a fyne.App) fyne.CanvasObject {

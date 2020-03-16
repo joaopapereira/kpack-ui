@@ -12,7 +12,7 @@ type Buildpack struct {
 	Version string
 }
 
-type CustomClusterBuilder struct {
+type ClusterBuilder struct {
 	BuiltSuccess bool
 	name         string
 	tag          string
@@ -22,12 +22,16 @@ type CustomClusterBuilder struct {
 	Buildpacks   []Buildpack
 }
 
-func (b *CustomClusterBuilder) Name() string {
+func (b *ClusterBuilder) Name() string {
 	return b.name
 }
 
-func (b *CustomClusterBuilder) Tag() string {
+func (b *ClusterBuilder) Tag() string {
 	return b.tag
+}
+
+func (b *ClusterBuilder) BuiltSuccessful() bool {
+	return b.BuiltSuccess
 }
 
 func NewBuilderRepo(kpackClient b_v1alpha1.BuildV1alpha1Interface, experimentalKpackClient e_v1alpha1.ExperimentalV1alpha1Interface) *BuilderRepo {
@@ -43,16 +47,16 @@ type BuilderRepo struct {
 	experimentalClient e_v1alpha1.ExperimentalV1alpha1Interface
 }
 
-func (b BuilderRepo) GetAllCustomClusterBuilders() ([]CustomClusterBuilder, error) {
+func (b BuilderRepo) GetAllCustomClusterBuilders() ([]ClusterBuilder, error) {
 	builders, err := b.experimentalClient.CustomClusterBuilders().List(v1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	var customBuilders []CustomClusterBuilder
+	var customBuilders []ClusterBuilder
 
 	for _, builder := range builders.Items {
-		customBuilder := CustomClusterBuilder{
+		customBuilder := ClusterBuilder{
 			tag:   builder.Spec.Tag,
 			Store: builder.Spec.Store,
 			name:  builder.Name,
@@ -76,4 +80,39 @@ func (b BuilderRepo) GetAllCustomClusterBuilders() ([]CustomClusterBuilder, erro
 	}
 
 	return customBuilders, nil
+}
+
+func (b BuilderRepo) GetAllClusterBuilders() ([]ClusterBuilder, error) {
+	builders, err := b.buildClient.ClusterBuilders().List(v1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	var clusterBuilders []ClusterBuilder
+
+	for _, builder := range builders.Items {
+		clusterBuilder := ClusterBuilder{
+			tag:   builder.Spec.Image,
+			Store: "",
+			name:  builder.Name,
+		}
+
+		if builder.Status.GetCondition(v1alpha1.ConditionBuilderReady).IsTrue() {
+			var buildpacks []Buildpack
+			for _, metadata := range builder.Status.BuilderMetadata {
+				buildpacks = append(buildpacks, Buildpack{
+					ID:      metadata.Id,
+					Version: metadata.Version,
+				})
+			}
+			clusterBuilder.Buildpacks = buildpacks
+			clusterBuilder.BuiltSuccess = true
+			clusterBuilder.Image = builder.Status.LatestImage
+			clusterBuilder.Stack = builder.Status.Stack.RunImage
+		}
+
+		clusterBuilders = append(clusterBuilders, clusterBuilder)
+	}
+
+	return clusterBuilders, nil
 }
