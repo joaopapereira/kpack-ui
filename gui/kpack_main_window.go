@@ -73,7 +73,7 @@ func builderMenu(app fyne.App, builderRepo *kpack.BuilderRepo) *fyne.Container {
 			builder.NewClusterGetter(
 				builderRepo))),
 	)
-	tabs.SetTabLocation(widget.TabLocationLeading)
+	tabs.SetTabLocation(widget.TabLocationTop)
 	tabs.SelectTabIndex(app.Preferences().Int(builderCurrentTab))
 
 	app.Preferences().SetInt(builderCurrentTab, tabs.CurrentTabIndex())

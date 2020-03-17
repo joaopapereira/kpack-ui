@@ -12,6 +12,11 @@ type Buildpack struct {
 	Version string
 }
 
+type NamespacedBuilders struct {
+	ClusterBuilder
+	Namespace string
+}
+
 type ClusterBuilder struct {
 	BuiltSuccess bool
 	name         string
@@ -95,6 +100,82 @@ func (b BuilderRepo) GetAllClusterBuilders() ([]ClusterBuilder, error) {
 			tag:   builder.Spec.Image,
 			Store: "",
 			name:  builder.Name,
+		}
+
+		if builder.Status.GetCondition(v1alpha1.ConditionBuilderReady).IsTrue() {
+			var buildpacks []Buildpack
+			for _, metadata := range builder.Status.BuilderMetadata {
+				buildpacks = append(buildpacks, Buildpack{
+					ID:      metadata.Id,
+					Version: metadata.Version,
+				})
+			}
+			clusterBuilder.Buildpacks = buildpacks
+			clusterBuilder.BuiltSuccess = true
+			clusterBuilder.Image = builder.Status.LatestImage
+			clusterBuilder.Stack = builder.Status.Stack.RunImage
+		}
+
+		clusterBuilders = append(clusterBuilders, clusterBuilder)
+	}
+
+	return clusterBuilders, nil
+}
+
+func (b BuilderRepo) GetAllCustomBuilders(namespace string) ([]NamespacedBuilders, error) {
+	builders, err := b.experimentalClient.CustomBuilders(namespace).List(v1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	var customBuilders []NamespacedBuilders
+
+	for _, builder := range builders.Items {
+		customBuilder := NamespacedBuilders{
+			ClusterBuilder: ClusterBuilder{
+				tag:   builder.Spec.Tag,
+				Store: builder.Spec.Store,
+				name:  builder.Name,
+			},
+			Namespace: namespace,
+		}
+
+		if builder.Status.GetCondition(v1alpha1.ConditionBuilderReady).IsTrue() {
+			var buildpacks []Buildpack
+			for _, metadata := range builder.Status.BuilderMetadata {
+				buildpacks = append(buildpacks, Buildpack{
+					ID:      metadata.Id,
+					Version: metadata.Version,
+				})
+			}
+			customBuilder.Buildpacks = buildpacks
+			customBuilder.BuiltSuccess = true
+			customBuilder.Image = builder.Status.LatestImage
+			customBuilder.Stack = builder.Status.Stack.RunImage
+		}
+
+		customBuilders = append(customBuilders, customBuilder)
+	}
+
+	return customBuilders, nil
+}
+
+func (b BuilderRepo) GetAllNamespacedBuilders(namespace string) ([]NamespacedBuilders, error) {
+	builders, err := b.buildClient.Builders(namespace).List(v1.ListOptions{})
+	if err != nil {
+		return nil, err
+	}
+
+	var clusterBuilders []NamespacedBuilders
+
+	for _, builder := range builders.Items {
+		clusterBuilder := NamespacedBuilders{
+			ClusterBuilder: ClusterBuilder{
+				tag:   builder.Spec.Image,
+				Store: "",
+				name:  builder.Name,
+			},
+			Namespace: namespace,
 		}
 
 		if builder.Status.GetCondition(v1alpha1.ConditionBuilderReady).IsTrue() {

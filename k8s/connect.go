@@ -12,6 +12,8 @@ import (
 	"github.com/pkg/errors"
 	k8serrors "k8s.io/apimachinery/pkg/api/errors"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+	core_v1 "k8s.io/client-go/kubernetes/typed/core/v1"
 	"k8s.io/client-go/tools/clientcmd"
 	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 
@@ -44,16 +46,19 @@ func ConnectToCluster(context string) (kpackui.KpackConnectionManager, error) {
 		}
 		return nil, errors.Wrap(err, "error retrieving information from the cluster")
 	}
+	k8sClientSet, err := kubernetes.NewForConfig(cliCfg)
 
 	return &connectionManager{
 		kpackExperimental: kpackClientSet.ExperimentalV1alpha1(),
 		kpackInterface:    kpackClientSet.BuildV1alpha1(),
+		k8sClient:         k8sClientSet.CoreV1(),
 	}, nil
 }
 
 type connectionManager struct {
 	kpackExperimental kexp.ExperimentalV1alpha1Interface
 	kpackInterface    kbuild.BuildV1alpha1Interface
+	k8sClient         core_v1.CoreV1Interface
 }
 
 func (c connectionManager) GetExperimentalKpack() kexp.ExperimentalV1alpha1Interface {
@@ -62,6 +67,10 @@ func (c connectionManager) GetExperimentalKpack() kexp.ExperimentalV1alpha1Inter
 
 func (c connectionManager) GetKpack() kbuild.BuildV1alpha1Interface {
 	return c.kpackInterface
+}
+
+func (c connectionManager) GetCorev1() core_v1.CoreV1Interface {
+	return c.k8sClient
 }
 
 func retrieveLocalConfiguration() (*clientcmdapi.Config, error) {
