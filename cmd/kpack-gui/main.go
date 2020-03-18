@@ -59,7 +59,7 @@ func main() {
 //						ObservedGeneration: 0,
 //						Conditions: []corev1alpha1.Condition{
 //							{
-//								Type:   k_v1alpha1.ConditionBuilderReady,
+//								Type:   k_kpack_v1.ConditionReady,
 //								Status: core_v1.ConditionTrue,
 //							},
 //						},

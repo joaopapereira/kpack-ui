@@ -68,7 +68,7 @@ func testBuilders(t *testing.T, when spec.G, it spec.S) {
 								ObservedGeneration: 0,
 								Conditions: []corev1alpha1.Condition{
 									{
-										Type:   v1alpha1.ConditionBuilderReady,
+										Type:   corev1alpha1.ConditionReady,
 										Status: v1.ConditionTrue,
 									},
 								},
@@ -137,7 +137,7 @@ func testBuilders(t *testing.T, when spec.G, it spec.S) {
 								ObservedGeneration: 0,
 								Conditions: []corev1alpha1.Condition{
 									{
-										Type:   v1alpha1.ConditionBuilderReady,
+										Type:   corev1alpha1.ConditionReady,
 										Status: v1.ConditionFalse,
 									},
 								},
@@ -189,7 +189,7 @@ func testBuilders(t *testing.T, when spec.G, it spec.S) {
 								ObservedGeneration: 0,
 								Conditions: []corev1alpha1.Condition{
 									{
-										Type:   v1alpha1.ConditionBuilderReady,
+										Type:   corev1alpha1.ConditionReady,
 										Status: v1.ConditionUnknown,
 									},
 								},
@@ -252,7 +252,7 @@ func testBuilders(t *testing.T, when spec.G, it spec.S) {
 						Status: corev1alpha1.Status{
 							Conditions: []corev1alpha1.Condition{
 								{
-									Type:   v1alpha1.ConditionBuilderReady,
+									Type:   corev1alpha1.ConditionReady,
 									Status: v1.ConditionFalse,
 								},
 							},
@@ -299,7 +299,7 @@ func testBuilders(t *testing.T, when spec.G, it spec.S) {
 								ObservedGeneration: 0,
 								Conditions: []corev1alpha1.Condition{
 									{
-										Type:   v1alpha1.ConditionBuilderReady,
+										Type:   corev1alpha1.ConditionReady,
 										Status: v1.ConditionTrue,
 									},
 								},
@@ -370,7 +370,7 @@ func testBuilders(t *testing.T, when spec.G, it spec.S) {
 								ObservedGeneration: 0,
 								Conditions: []corev1alpha1.Condition{
 									{
-										Type:   v1alpha1.ConditionBuilderReady,
+										Type:   corev1alpha1.ConditionReady,
 										Status: v1.ConditionFalse,
 									},
 								},
@@ -424,7 +424,7 @@ func testBuilders(t *testing.T, when spec.G, it spec.S) {
 								ObservedGeneration: 0,
 								Conditions: []corev1alpha1.Condition{
 									{
-										Type:   v1alpha1.ConditionBuilderReady,
+										Type:   corev1alpha1.ConditionReady,
 										Status: v1.ConditionUnknown,
 									},
 								},
@@ -471,7 +471,7 @@ func testBuilders(t *testing.T, when spec.G, it spec.S) {
 							ObservedGeneration: 0,
 							Conditions: []corev1alpha1.Condition{
 								{
-									Type:   v1alpha1.ConditionBuilderReady,
+									Type:   corev1alpha1.ConditionReady,
 									Status: v1.ConditionTrue,
 								},
 							},
@@ -522,7 +522,7 @@ func testBuilders(t *testing.T, when spec.G, it spec.S) {
 							ObservedGeneration: 0,
 							Conditions: []corev1alpha1.Condition{
 								{
-									Type:   v1alpha1.ConditionBuilderReady,
+									Type:   corev1alpha1.ConditionReady,
 									Status: v1.ConditionFalse,
 								},
 							},
@@ -556,7 +556,7 @@ func testBuilders(t *testing.T, when spec.G, it spec.S) {
 							ObservedGeneration: 0,
 							Conditions: []corev1alpha1.Condition{
 								{
-									Type:   v1alpha1.ConditionBuilderReady,
+									Type:   corev1alpha1.ConditionReady,
 									Status: v1.ConditionUnknown,
 								},
 							},
@@ -603,7 +603,7 @@ func testBuilders(t *testing.T, when spec.G, it spec.S) {
 						ObservedGeneration: 0,
 						Conditions: []corev1alpha1.Condition{
 							{
-								Type:   v1alpha1.ConditionBuilderReady,
+								Type:   corev1alpha1.ConditionReady,
 								Status: v1.ConditionFalse,
 							},
 						},
@@ -635,7 +635,7 @@ func testBuilders(t *testing.T, when spec.G, it spec.S) {
 							ObservedGeneration: 0,
 							Conditions: []corev1alpha1.Condition{
 								{
-									Type:   v1alpha1.ConditionBuilderReady,
+									Type:   corev1alpha1.ConditionReady,
 									Status: v1.ConditionTrue,
 								},
 							},
@@ -690,7 +690,7 @@ func testBuilders(t *testing.T, when spec.G, it spec.S) {
 							ObservedGeneration: 0,
 							Conditions: []corev1alpha1.Condition{
 								{
-									Type:   v1alpha1.ConditionBuilderReady,
+									Type:   corev1alpha1.ConditionReady,
 									Status: v1.ConditionFalse,
 								},
 							},
@@ -728,7 +728,7 @@ func testBuilders(t *testing.T, when spec.G, it spec.S) {
 							ObservedGeneration: 0,
 							Conditions: []corev1alpha1.Condition{
 								{
-									Type:   v1alpha1.ConditionBuilderReady,
+									Type:   corev1alpha1.ConditionReady,
 									Status: v1.ConditionUnknown,
 								},
 							},

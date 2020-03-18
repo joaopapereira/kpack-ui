@@ -1,7 +1,7 @@
 package kpack
 
 import (
-	"github.com/pivotal/kpack/pkg/apis/build/v1alpha1"
+	kpack_v1 "github.com/pivotal/kpack/pkg/apis/core/v1alpha1"
 	b_v1alpha1 "github.com/pivotal/kpack/pkg/client/clientset/versioned/typed/build/v1alpha1"
 	e_v1alpha1 "github.com/pivotal/kpack/pkg/client/clientset/versioned/typed/experimental/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -67,7 +67,7 @@ func (b BuilderRepo) GetAllCustomClusterBuilders() ([]ClusterBuilder, error) {
 			name:  builder.Name,
 		}
 
-		if builder.Status.GetCondition(v1alpha1.ConditionBuilderReady).IsTrue() {
+		if builder.Status.GetCondition(kpack_v1.ConditionReady).IsTrue() {
 			var buildpacks []Buildpack
 			for _, metadata := range builder.Status.BuilderMetadata {
 				buildpacks = append(buildpacks, Buildpack{
@@ -102,7 +102,7 @@ func (b BuilderRepo) GetAllClusterBuilders() ([]ClusterBuilder, error) {
 			name:  builder.Name,
 		}
 
-		if builder.Status.GetCondition(v1alpha1.ConditionBuilderReady).IsTrue() {
+		if builder.Status.GetCondition(kpack_v1.ConditionReady).IsTrue() {
 			var buildpacks []Buildpack
 			for _, metadata := range builder.Status.BuilderMetadata {
 				buildpacks = append(buildpacks, Buildpack{
@@ -140,7 +140,7 @@ func (b BuilderRepo) GetAllCustomBuilders(namespace string) ([]NamespacedBuilder
 			Namespace: namespace,
 		}
 
-		if builder.Status.GetCondition(v1alpha1.ConditionBuilderReady).IsTrue() {
+		if builder.Status.GetCondition(kpack_v1.ConditionReady).IsTrue() {
 			var buildpacks []Buildpack
 			for _, metadata := range builder.Status.BuilderMetadata {
 				buildpacks = append(buildpacks, Buildpack{
@@ -178,7 +178,7 @@ func (b BuilderRepo) GetAllNamespacedBuilders(namespace string) ([]NamespacedBui
 			Namespace: namespace,
 		}
 
-		if builder.Status.GetCondition(v1alpha1.ConditionBuilderReady).IsTrue() {
+		if builder.Status.GetCondition(kpack_v1.ConditionReady).IsTrue() {
 			var buildpacks []Buildpack
 			for _, metadata := range builder.Status.BuilderMetadata {
 				buildpacks = append(buildpacks, Buildpack{
