@@ -1,9 +1,9 @@
 package kpack
 
 import (
-	kpack_v1 "github.com/pivotal/kpack/pkg/apis/core/v1alpha1"
-	b_v1alpha1 "github.com/pivotal/kpack/pkg/client/clientset/versioned/typed/build/v1alpha1"
-	e_v1alpha1 "github.com/pivotal/kpack/pkg/client/clientset/versioned/typed/experimental/v1alpha1"
+	kpackv1 "github.com/pivotal/kpack/pkg/apis/core/v1alpha1"
+	bv1alpha1 "github.com/pivotal/kpack/pkg/client/clientset/versioned/typed/build/v1alpha1"
+	ev1alpha1 "github.com/pivotal/kpack/pkg/client/clientset/versioned/typed/experimental/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -12,7 +12,7 @@ type Buildpack struct {
 	Version string
 }
 
-type NamespacedBuilders struct {
+type NamespacedBuilder struct {
 	ClusterBuilder
 	Namespace string
 }
@@ -39,7 +39,7 @@ func (b *ClusterBuilder) BuiltSuccessful() bool {
 	return b.BuiltSuccess
 }
 
-func NewBuilderRepo(kpackClient b_v1alpha1.BuildV1alpha1Interface, experimentalKpackClient e_v1alpha1.ExperimentalV1alpha1Interface) *BuilderRepo {
+func NewBuilderRepo(kpackClient bv1alpha1.BuildV1alpha1Interface, experimentalKpackClient ev1alpha1.ExperimentalV1alpha1Interface) *BuilderRepo {
 	repo := BuilderRepo{
 		buildClient:        kpackClient,
 		experimentalClient: experimentalKpackClient,
@@ -48,8 +48,8 @@ func NewBuilderRepo(kpackClient b_v1alpha1.BuildV1alpha1Interface, experimentalK
 }
 
 type BuilderRepo struct {
-	buildClient        b_v1alpha1.BuildV1alpha1Interface
-	experimentalClient e_v1alpha1.ExperimentalV1alpha1Interface
+	buildClient        bv1alpha1.BuildV1alpha1Interface
+	experimentalClient ev1alpha1.ExperimentalV1alpha1Interface
 }
 
 func (b BuilderRepo) GetAllCustomClusterBuilders() ([]ClusterBuilder, error) {
@@ -67,7 +67,7 @@ func (b BuilderRepo) GetAllCustomClusterBuilders() ([]ClusterBuilder, error) {
 			name:  builder.Name,
 		}
 
-		if builder.Status.GetCondition(kpack_v1.ConditionReady).IsTrue() {
+		if builder.Status.GetCondition(kpackv1.ConditionReady).IsTrue() {
 			var buildpacks []Buildpack
 			for _, metadata := range builder.Status.BuilderMetadata {
 				buildpacks = append(buildpacks, Buildpack{
@@ -102,7 +102,7 @@ func (b BuilderRepo) GetAllClusterBuilders() ([]ClusterBuilder, error) {
 			name:  builder.Name,
 		}
 
-		if builder.Status.GetCondition(kpack_v1.ConditionReady).IsTrue() {
+		if builder.Status.GetCondition(kpackv1.ConditionReady).IsTrue() {
 			var buildpacks []Buildpack
 			for _, metadata := range builder.Status.BuilderMetadata {
 				buildpacks = append(buildpacks, Buildpack{
@@ -122,16 +122,16 @@ func (b BuilderRepo) GetAllClusterBuilders() ([]ClusterBuilder, error) {
 	return clusterBuilders, nil
 }
 
-func (b BuilderRepo) GetAllCustomBuilders(namespace string) ([]NamespacedBuilders, error) {
+func (b BuilderRepo) GetAllCustomBuilders(namespace string) ([]NamespacedBuilder, error) {
 	builders, err := b.experimentalClient.CustomBuilders(namespace).List(v1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	var customBuilders []NamespacedBuilders
+	var customBuilders []NamespacedBuilder
 
 	for _, builder := range builders.Items {
-		customBuilder := NamespacedBuilders{
+		customBuilder := NamespacedBuilder{
 			ClusterBuilder: ClusterBuilder{
 				tag:   builder.Spec.Tag,
 				Store: builder.Spec.Store,
@@ -140,7 +140,7 @@ func (b BuilderRepo) GetAllCustomBuilders(namespace string) ([]NamespacedBuilder
 			Namespace: namespace,
 		}
 
-		if builder.Status.GetCondition(kpack_v1.ConditionReady).IsTrue() {
+		if builder.Status.GetCondition(kpackv1.ConditionReady).IsTrue() {
 			var buildpacks []Buildpack
 			for _, metadata := range builder.Status.BuilderMetadata {
 				buildpacks = append(buildpacks, Buildpack{
@@ -160,16 +160,16 @@ func (b BuilderRepo) GetAllCustomBuilders(namespace string) ([]NamespacedBuilder
 	return customBuilders, nil
 }
 
-func (b BuilderRepo) GetAllNamespacedBuilders(namespace string) ([]NamespacedBuilders, error) {
+func (b BuilderRepo) GetAllNamespacedBuilders(namespace string) ([]NamespacedBuilder, error) {
 	builders, err := b.buildClient.Builders(namespace).List(v1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	var clusterBuilders []NamespacedBuilders
+	var clusterBuilders []NamespacedBuilder
 
 	for _, builder := range builders.Items {
-		clusterBuilder := NamespacedBuilders{
+		clusterBuilder := NamespacedBuilder{
 			ClusterBuilder: ClusterBuilder{
 				tag:   builder.Spec.Image,
 				Store: "",
@@ -178,7 +178,7 @@ func (b BuilderRepo) GetAllNamespacedBuilders(namespace string) ([]NamespacedBui
 			Namespace: namespace,
 		}
 
-		if builder.Status.GetCondition(kpack_v1.ConditionReady).IsTrue() {
+		if builder.Status.GetCondition(kpackv1.ConditionReady).IsTrue() {
 			var buildpacks []Buildpack
 			for _, metadata := range builder.Status.BuilderMetadata {
 				buildpacks = append(buildpacks, Buildpack{

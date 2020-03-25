@@ -18,6 +18,7 @@ func main() {
 	mainView := gui.NewKpackMainView(contextGetter, k8s.ConnectToCluster)
 	//mainView := gui.NewKpackMainView(contextGetter, stubbedConnectionManager())
 
+	//gui.FyneDemo(a)
 	var contextView fyne.Window
 	contextView = gui.SelectContext(a, contextGetter, func(context string) {
 		mainView.LoadUI(a, context, func() {

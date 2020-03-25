@@ -10,11 +10,11 @@ import (
 
 	"kpackui"
 	"kpackui/builder"
+	"kpackui/k8s"
 	"kpackui/kpack"
 )
 
 const preferenceCurrentTab = "currentTab"
-const builderCurrentTab = "currentTab"
 
 func NewKpackMainView(getter ContextGetter, connectionBuilder func(context string) (kpackui.KpackConnectionManager, error)) *KpackMainView {
 	return &KpackMainView{
@@ -52,10 +52,11 @@ func (v *KpackMainView) LoadUI(a fyne.App, context string, onConnectionFailure f
 		v.connectionManager.GetKpack(),
 		v.connectionManager.GetExperimentalKpack(),
 	)
+	namespaceGetter := k8s.NewNamespaceGetter(v.connectionManager.GetCorev1())
 
 	tabs := widget.NewTabContainer(
 		widget.NewTabItemWithIcon("Builders", theme.HomeIcon(),
-			builderMenu(a, builderRepo),
+			builderMenu(a, builderRepo, namespaceGetter),
 		),
 	)
 	tabs.SetTabLocation(widget.TabLocationLeading)
@@ -64,19 +65,24 @@ func (v *KpackMainView) LoadUI(a fyne.App, context string, onConnectionFailure f
 	a.Preferences().SetInt(preferenceCurrentTab, tabs.CurrentTabIndex())
 }
 
-func builderMenu(app fyne.App, builderRepo *kpack.BuilderRepo) *fyne.Container {
+func builderMenu(a fyne.App, builderRepo *kpack.BuilderRepo, namespaceGetter *k8s.NamespaceGetter) *fyne.Container {
 	tabs := widget.NewTabContainer(
-		widget.NewTabItem("Custom Cluster", NewBuildersScreen(
+		widget.NewTabItem("Custom Cluster", NewClusterBuildersScreen(
 			builder.NewCustomClusterGetter(
 				builderRepo))),
-		widget.NewTabItem("Cluster", NewBuildersScreen(
+		widget.NewTabItem("Cluster", NewClusterBuildersScreen(
 			builder.NewClusterGetter(
 				builderRepo))),
+		widget.NewTabItem("Custom Namespace", NewNamespacedBuildersScreen(
+			namespaceGetter,
+			builder.NewCustomNamespacedGetter(builderRepo),
+		)),
+		widget.NewTabItem("Namespaced", NewNamespacedBuildersScreen(
+			namespaceGetter,
+			builder.NewNamespacedGetter(builderRepo),
+		)),
 	)
-	tabs.SetTabLocation(widget.TabLocationTop)
-	tabs.SelectTabIndex(app.Preferences().Int(builderCurrentTab))
 
-	app.Preferences().SetInt(builderCurrentTab, tabs.CurrentTabIndex())
 	return fyne.NewContainerWithLayout(layout.NewBorderLayout(nil, nil, nil, nil),
 		tabs,
 	)
@@ -111,7 +117,7 @@ func builderMenu(app fyne.App, builderRepo *kpack.BuilderRepo) *fyne.Container {
 //	)
 //}
 
-//func fyneDemo(a fyne.App) {
+//func FyneDemo(a fyne.App) {
 //	w := a.NewWindow("Fyne Demo")
 //	w.SetMainMenu(fyne.NewMainMenu(fyne.NewMenu("File",
 //		fyne.NewMenuItem("New", func() { fmt.Println("Menu New") }),
@@ -124,7 +130,7 @@ func builderMenu(app fyne.App, builderRepo *kpack.BuilderRepo) *fyne.Container {
 //	w.SetMaster()
 //
 //	tabs := widget.NewTabContainer(
-//		widget.NewTabItemWithIcon("Welcome", theme.HomeIcon(), welcomeScreen(a)),
+//		//widget.NewTabItemWithIcon("Welcome", theme.HomeIcon(), welcomeScreen(a)),
 //		widget.NewTabItemWithIcon("Widgets", theme.ContentCopyIcon(), screens.WidgetScreen()),
 //		widget.NewTabItemWithIcon("Graphics", theme.DocumentCreateIcon(), screens.GraphicsScreen()),
 //		widget.NewTabItemWithIcon("Windows", theme.ViewFullScreenIcon(), screens.DialogScreen(w)),

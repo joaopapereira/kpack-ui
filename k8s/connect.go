@@ -48,6 +48,11 @@ func ConnectToCluster(context string) (kpackui.KpackConnectionManager, error) {
 	}
 	k8sClientSet, err := kubernetes.NewForConfig(cliCfg)
 
+	if err != nil {
+		log.Printf("unable to create configuration: %s", err)
+		return nil, errors.Wrap(err, "generate new config")
+	}
+
 	return &connectionManager{
 		kpackExperimental: kpackClientSet.ExperimentalV1alpha1(),
 		kpackInterface:    kpackClientSet.BuildV1alpha1(),

@@ -1,6 +1,7 @@
 package gui
 
 import (
+	"fmt"
 	"image/color"
 	"log"
 
@@ -23,12 +24,17 @@ type clusterBuilderGetter interface {
 	GetAll() ([]kpack.ClusterBuilder, error)
 }
 
-func NewBuildersScreen(getter clusterBuilderGetter) fyne.CanvasObject {
+func NewClusterBuildersScreen(getter clusterBuilderGetter) fyne.CanvasObject {
 	builders, err := getter.GetAll()
 	if err != nil {
 		log.Fatalf("cannot retrieve custom builders: %s", err.Error())
 	}
 	container := fyne.NewContainerWithLayout(layout.NewGridLayout(1))
+
+	if len(builders) == 0 {
+		container.AddObject(widget.NewLabel("No builders"))
+		return container
+	}
 
 	for _, clusterBuilder := range builders {
 		var builderWidget *builderWidget
@@ -41,6 +47,52 @@ func NewBuildersScreen(getter clusterBuilderGetter) fyne.CanvasObject {
 			builderWidget,
 		)
 	}
+
+	return container
+}
+
+type namespacedBuilderGetter interface {
+	GetAll(namespace string) ([]kpack.NamespacedBuilder, error)
+}
+
+type namespaceGetter interface {
+	GetNamespaces() ([]string, error)
+}
+
+func NewNamespacedBuildersScreen(namespaceGetter namespaceGetter, builderGetter namespacedBuilderGetter) fyne.CanvasObject {
+	container := fyne.NewContainerWithLayout(layout.NewGridLayout(1))
+	namespaces, err := namespaceGetter.GetNamespaces()
+	if err != nil {
+		log.Fatalf("Unable to get namespaces: %s", err.Error())
+	}
+
+	listOfBuildersContainer := fyne.NewContainerWithLayout(layout.NewGridLayout(1))
+	container.AddObject(widget.NewSelect(namespaces, func(namespace string) {
+		builders, err := builderGetter.GetAll(namespace)
+		if err != nil {
+			log.Fatalf("Unable to get namespaced builders: %s", err.Error())
+		}
+
+		if len(builders) == 0 {
+			listOfBuildersContainer.Objects = nil
+			listOfBuildersContainer.AddObject(widget.NewLabel(fmt.Sprintf("No builders in the namespace %s", namespace)))
+			return
+		}
+
+		for _, builder := range builders {
+			var builderWidget *builderWidget
+			if builder.BuiltSuccessful() {
+				builderWidget = newSuccessBuilder(&builder)
+			} else {
+				builderWidget = newErrorBuilder(&builder)
+			}
+			listOfBuildersContainer.AddObject(
+				builderWidget,
+			)
+		}
+	}))
+
+	container.AddObject(listOfBuildersContainer)
 
 	return container
 }

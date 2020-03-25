@@ -5,20 +5,20 @@ import (
 	"github.com/pivotal/kpack/pkg/client/clientset/versioned/typed/build/v1alpha1"
 	v1alpha12 "github.com/pivotal/kpack/pkg/client/clientset/versioned/typed/experimental/v1alpha1"
 	"k8s.io/client-go/kubernetes/fake"
-	core_v1 "k8s.io/client-go/kubernetes/typed/core/v1"
+	corev1 "k8s.io/client-go/kubernetes/typed/core/v1"
 )
 
 type KpackConnectionManager interface {
 	GetKpack() v1alpha1.BuildV1alpha1Interface
 	GetExperimentalKpack() v1alpha12.ExperimentalV1alpha1Interface
-	GetCorev1() core_v1.CoreV1Interface
+	GetCorev1() corev1.CoreV1Interface
 }
 
 type DummyKpackConnectionManager struct {
 	fakeClient *kpack.Clientset
 	expKpack   v1alpha12.ExperimentalV1alpha1Interface
 	buildKpack v1alpha1.BuildV1alpha1Interface
-	corev1     core_v1.CoreV1Interface
+	corev1     corev1.CoreV1Interface
 }
 
 func (d *DummyKpackConnectionManager) GetKpack() v1alpha1.BuildV1alpha1Interface {
@@ -41,9 +41,10 @@ func (d *DummyKpackConnectionManager) GetExperimentalKpack() v1alpha12.Experimen
 	return d.expKpack
 }
 
-func (d *DummyKpackConnectionManager) GetCorev1() core_v1.CoreV1Interface {
+func (d *DummyKpackConnectionManager) GetCorev1() corev1.CoreV1Interface {
 	if d.corev1 == nil {
 		d.corev1 = fake.NewSimpleClientset().CoreV1()
 	}
-	return  d.corev1
+
+	return d.corev1
 }
