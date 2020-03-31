@@ -21,10 +21,10 @@ type KpackBuilder interface {
 }
 
 type clusterBuilderGetter interface {
-	GetAll() ([]kpack.ClusterBuilder, error)
+	GetAll() ([]*kpack.ClusterBuilder, error)
 }
 
-func NewClusterBuildersScreen(getter clusterBuilderGetter) fyne.CanvasObject {
+func NewClusterBuildersScreen(app fyne.App, getter clusterBuilderGetter) fyne.CanvasObject {
 	builders, err := getter.GetAll()
 	if err != nil {
 		log.Fatalf("cannot retrieve custom builders: %s", err.Error())
@@ -39,9 +39,9 @@ func NewClusterBuildersScreen(getter clusterBuilderGetter) fyne.CanvasObject {
 	for _, clusterBuilder := range builders {
 		var builderWidget *builderWidget
 		if clusterBuilder.BuiltSuccessful() {
-			builderWidget = newSuccessBuilder(&clusterBuilder)
+			builderWidget = newSuccessBuilder(app, clusterBuilder)
 		} else {
-			builderWidget = newErrorBuilder(&clusterBuilder)
+			builderWidget = newErrorBuilder(app, clusterBuilder)
 		}
 		container.AddObject(
 			builderWidget,
@@ -52,14 +52,14 @@ func NewClusterBuildersScreen(getter clusterBuilderGetter) fyne.CanvasObject {
 }
 
 type namespacedBuilderGetter interface {
-	GetAll(namespace string) ([]kpack.NamespacedBuilder, error)
+	GetAll(namespace string) ([]*kpack.NamespacedBuilder, error)
 }
 
 type namespaceGetter interface {
 	GetNamespaces() ([]string, error)
 }
 
-func NewNamespacedBuildersScreen(namespaceGetter namespaceGetter, builderGetter namespacedBuilderGetter) fyne.CanvasObject {
+func NewNamespacedBuildersScreen(app fyne.App, namespaceGetter namespaceGetter, builderGetter namespacedBuilderGetter) fyne.CanvasObject {
 	container := fyne.NewContainerWithLayout(layout.NewGridLayout(1))
 	namespaces, err := namespaceGetter.GetNamespaces()
 	if err != nil {
@@ -82,9 +82,9 @@ func NewNamespacedBuildersScreen(namespaceGetter namespaceGetter, builderGetter 
 		for _, builder := range builders {
 			var builderWidget *builderWidget
 			if builder.BuiltSuccessful() {
-				builderWidget = newSuccessBuilder(&builder)
+				builderWidget = newSuccessBuilder(app, builder)
 			} else {
-				builderWidget = newErrorBuilder(&builder)
+				builderWidget = newErrorBuilder(app, builder)
 			}
 			listOfBuildersContainer.AddObject(
 				builderWidget,
@@ -102,27 +102,41 @@ var (
 	red   = &color.RGBA{R: 128, G: 0, B: 0, A: 255}
 )
 
-func newSuccessBuilder(builder KpackBuilder) *builderWidget {
+func newSuccessBuilder(app fyne.App, builder KpackBuilder) *builderWidget {
 	return &builderWidget{
 		builder:    builder,
 		background: green,
 		textColor:  color.Black,
+		onClick: func() {
+			NewBuilderView(app, builder)
+		},
 	}
 }
 
-func newErrorBuilder(builder KpackBuilder) *builderWidget {
+func newErrorBuilder(app fyne.App, builder KpackBuilder) *builderWidget {
 	return &builderWidget{
 		builder:    builder,
 		background: red,
 		textColor:  color.White,
+		onClick: func() {
+			NewBuilderView(app, builder)
+		},
 	}
 }
 
 type builderWidget struct {
+	fyne.Tappable
 	widget.BaseWidget
 	background color.Color
 	textColor  color.Color
 	builder    KpackBuilder
+	onClick    func()
+}
+
+func (b *builderWidget) Tapped(*fyne.PointEvent) {
+	if b.onClick != nil {
+		b.onClick()
+	}
 }
 
 func (b *builderWidget) MinSize() fyne.Size {

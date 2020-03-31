@@ -52,13 +52,13 @@ type BuilderRepo struct {
 	experimentalClient ev1alpha1.ExperimentalV1alpha1Interface
 }
 
-func (b BuilderRepo) GetAllCustomClusterBuilders() ([]ClusterBuilder, error) {
+func (b BuilderRepo) GetAllCustomClusterBuilders() ([]*ClusterBuilder, error) {
 	builders, err := b.experimentalClient.CustomClusterBuilders().List(v1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	var customBuilders []ClusterBuilder
+	var customBuilders []*ClusterBuilder
 
 	for _, builder := range builders.Items {
 		customBuilder := ClusterBuilder{
@@ -81,19 +81,19 @@ func (b BuilderRepo) GetAllCustomClusterBuilders() ([]ClusterBuilder, error) {
 			customBuilder.Stack = builder.Status.Stack.RunImage
 		}
 
-		customBuilders = append(customBuilders, customBuilder)
+		customBuilders = append(customBuilders, &customBuilder)
 	}
 
 	return customBuilders, nil
 }
 
-func (b BuilderRepo) GetAllClusterBuilders() ([]ClusterBuilder, error) {
+func (b BuilderRepo) GetAllClusterBuilders() ([]*ClusterBuilder, error) {
 	builders, err := b.buildClient.ClusterBuilders().List(v1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	var clusterBuilders []ClusterBuilder
+	var clusterBuilders []*ClusterBuilder
 
 	for _, builder := range builders.Items {
 		clusterBuilder := ClusterBuilder{
@@ -116,19 +116,19 @@ func (b BuilderRepo) GetAllClusterBuilders() ([]ClusterBuilder, error) {
 			clusterBuilder.Stack = builder.Status.Stack.RunImage
 		}
 
-		clusterBuilders = append(clusterBuilders, clusterBuilder)
+		clusterBuilders = append(clusterBuilders, &clusterBuilder)
 	}
 
 	return clusterBuilders, nil
 }
 
-func (b BuilderRepo) GetAllCustomBuilders(namespace string) ([]NamespacedBuilder, error) {
+func (b BuilderRepo) GetAllCustomBuilders(namespace string) ([]*NamespacedBuilder, error) {
 	builders, err := b.experimentalClient.CustomBuilders(namespace).List(v1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	var customBuilders []NamespacedBuilder
+	var customBuilders []*NamespacedBuilder
 
 	for _, builder := range builders.Items {
 		customBuilder := NamespacedBuilder{
@@ -154,19 +154,19 @@ func (b BuilderRepo) GetAllCustomBuilders(namespace string) ([]NamespacedBuilder
 			customBuilder.Stack = builder.Status.Stack.RunImage
 		}
 
-		customBuilders = append(customBuilders, customBuilder)
+		customBuilders = append(customBuilders, &customBuilder)
 	}
 
 	return customBuilders, nil
 }
 
-func (b BuilderRepo) GetAllNamespacedBuilders(namespace string) ([]NamespacedBuilder, error) {
+func (b BuilderRepo) GetAllNamespacedBuilders(namespace string) ([]*NamespacedBuilder, error) {
 	builders, err := b.buildClient.Builders(namespace).List(v1.ListOptions{})
 	if err != nil {
 		return nil, err
 	}
 
-	var clusterBuilders []NamespacedBuilder
+	var clusterBuilders []*NamespacedBuilder
 
 	for _, builder := range builders.Items {
 		clusterBuilder := NamespacedBuilder{
@@ -192,7 +192,7 @@ func (b BuilderRepo) GetAllNamespacedBuilders(namespace string) ([]NamespacedBui
 			clusterBuilder.Stack = builder.Status.Stack.RunImage
 		}
 
-		clusterBuilders = append(clusterBuilders, clusterBuilder)
+		clusterBuilders = append(clusterBuilders, &clusterBuilder)
 	}
 
 	return clusterBuilders, nil

@@ -68,16 +68,20 @@ func (v *KpackMainView) LoadUI(a fyne.App, context string, onConnectionFailure f
 func builderMenu(a fyne.App, builderRepo *kpack.BuilderRepo, namespaceGetter *k8s.NamespaceGetter) *fyne.Container {
 	tabs := widget.NewTabContainer(
 		widget.NewTabItem("Custom Cluster", NewClusterBuildersScreen(
+			a,
 			builder.NewCustomClusterGetter(
 				builderRepo))),
 		widget.NewTabItem("Cluster", NewClusterBuildersScreen(
+			a,
 			builder.NewClusterGetter(
 				builderRepo))),
 		widget.NewTabItem("Custom Namespace", NewNamespacedBuildersScreen(
+			a,
 			namespaceGetter,
 			builder.NewCustomNamespacedGetter(builderRepo),
 		)),
 		widget.NewTabItem("Namespaced", NewNamespacedBuildersScreen(
+			a,
 			namespaceGetter,
 			builder.NewNamespacedGetter(builderRepo),
 		)),

@@ -3,13 +3,13 @@ package builder
 import "kpackui/kpack"
 
 type ClusterBuilderRepo interface {
-	GetAllCustomClusterBuilders() ([]kpack.ClusterBuilder, error)
-	GetAllClusterBuilders() ([]kpack.ClusterBuilder, error)
+	GetAllCustomClusterBuilders() ([]*kpack.ClusterBuilder, error)
+	GetAllClusterBuilders() ([]*kpack.ClusterBuilder, error)
 }
 
 type NamespacedBuilderRepo interface {
-	GetAllCustomBuilders(namespace string) ([]kpack.NamespacedBuilder, error)
-	GetAllNamespacedBuilders(namespace string) ([]kpack.NamespacedBuilder, error)
+	GetAllCustomBuilders(namespace string) ([]*kpack.NamespacedBuilder, error)
+	GetAllNamespacedBuilders(namespace string) ([]*kpack.NamespacedBuilder, error)
 }
 
 func NewCustomClusterGetter(repo ClusterBuilderRepo) *CustomClusterGetter {
@@ -22,7 +22,7 @@ type CustomClusterGetter struct {
 	repo ClusterBuilderRepo
 }
 
-func (c *CustomClusterGetter) GetAll() ([]kpack.ClusterBuilder, error) {
+func (c *CustomClusterGetter) GetAll() ([]*kpack.ClusterBuilder, error) {
 	return c.repo.GetAllCustomClusterBuilders()
 }
 
@@ -36,7 +36,7 @@ type ClusterGetter struct {
 	repo ClusterBuilderRepo
 }
 
-func (c *ClusterGetter) GetAll() ([]kpack.ClusterBuilder, error) {
+func (c *ClusterGetter) GetAll() ([]*kpack.ClusterBuilder, error) {
 	return c.repo.GetAllClusterBuilders()
 }
 
@@ -50,7 +50,7 @@ type NamespaceGetter struct {
 	repo NamespacedBuilderRepo
 }
 
-func (c *NamespaceGetter) GetAll(namespace string) ([]kpack.NamespacedBuilder, error) {
+func (c *NamespaceGetter) GetAll(namespace string) ([]*kpack.NamespacedBuilder, error) {
 	return c.repo.GetAllNamespacedBuilders(namespace)
 }
 
@@ -64,6 +64,6 @@ type CustomNamespaceGetter struct {
 	repo NamespacedBuilderRepo
 }
 
-func (c *CustomNamespaceGetter) GetAll(namespace string) ([]kpack.NamespacedBuilder, error) {
+func (c *CustomNamespaceGetter) GetAll(namespace string) ([]*kpack.NamespacedBuilder, error) {
 	return c.repo.GetAllCustomBuilders(namespace)
 }
