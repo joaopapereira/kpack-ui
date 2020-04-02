@@ -11,8 +11,8 @@ cloud.google.com/go/pubsub v1.0.1/go.mod h1:R0Gpsv3s54REJCy4fxDixWD93lHJMoZTyQ2k
 contrib.go.opencensus.io/exporter/prometheus v0.1.0/go.mod h1:cGFniUXGZlKRjzOyuZJ6mgB+PgBcCIa79kEKR8YCW+A=
 contrib.go.opencensus.io/exporter/stackdriver v0.12.2/go.mod h1:iwB6wGarfphGGe/e5CWqyUk/cLzKnWsOKPVW3no6OTw=
 contrib.go.opencensus.io/resource v0.1.1/go.mod h1:F361eGI91LCmW1I/Saf+rX0+OFcigGlFvXwEGEnkRLA=
-fyne.io/fyne v1.2.2 h1:mf7EseASp3CAC5vLWVPLnsoKxvp/ARdu3Seh0HvAQak=
-fyne.io/fyne v1.2.2/go.mod h1:Ab+3DIB/FVteW0y4DXfmZv4N3JdnCBh2lHkINI02BOU=
+fyne.io/fyne v1.2.3 h1:5xwtSBNjxxmg+GF/lYvvf4xPzyjgWQoJVrzb+bt5gaA=
+fyne.io/fyne v1.2.3/go.mod h1:JhDdBrPP/Kdr1H5ZT3HW8E/6zlz+GkOldWqSirGBDnY=
 github.com/Azure/azure-sdk-for-go v35.0.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
 github.com/Azure/azure-sdk-for-go v38.0.0+incompatible/go.mod h1:9XXNKU+eRnpl9moKnB4QOLf1HestfXbmab5FXxiDBjc=
 github.com/Azure/go-ansiterm v0.0.0-20170929234023-d6e3b3328b78/go.mod h1:LmzpDX56iTiv29bbRTIsUNlaFfuhWRQBWjQdVyAevI8=

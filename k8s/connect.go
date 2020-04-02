@@ -78,14 +78,17 @@ func (c connectionManager) GetCorev1() core_v1.CoreV1Interface {
 	return c.k8sClient
 }
 
+var kubeconfig *string
+
 func retrieveLocalConfiguration() (*clientcmdapi.Config, error) {
-	var kubeconfig *string
-	if home := homeDir(); home != "" {
-		kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
-	} else {
-		kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+	if kubeconfig == nil {
+		if home := homeDir(); home != "" {
+			kubeconfig = flag.String("kubeconfig", filepath.Join(home, ".kube", "config"), "(optional) absolute path to the kubeconfig file")
+		} else {
+			kubeconfig = flag.String("kubeconfig", "", "absolute path to the kubeconfig file")
+		}
+		flag.Parse()
 	}
-	flag.Parse()
 
 	return clientcmd.LoadFromFile(*kubeconfig)
 }

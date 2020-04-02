@@ -23,7 +23,6 @@ docker:
 web_deps:
 	cd web && npm install
 
-
 unit-test: unit-test-go unit_test_web
 
 unit-test-go:
@@ -44,10 +43,6 @@ install-golangci-lint:
 	@echo "> Installing golangci-lint..."
 	cd tools; $(GOCMD) install github.com/golangci/golangci-lint/cmd/golangci-lint
 
-lint: install-golangci-lint
-	@echo "> Linting code..."
-	@golangci-lint run -c golangci.yaml
-
 lint: lint_go lint_web
 
 lint_web: web_deps
@@ -64,3 +59,7 @@ generate_icons: fyne_app_installed
 fyne_app_installed:
 	@echo "> Installing fyne app..."
 	@go get fyne.io/fyne/cmd/fyne
+
+app: generate_icons
+	@echo "> Packaging app"
+	@fyne package -os darwin -icon static/icons/kpack-ui-32x32.png -sourceDir ./cmd/kpack-gui/

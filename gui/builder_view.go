@@ -23,7 +23,7 @@ func NewBuilderView(app fyne.App, builder KpackBuilder) {
 	fields = append(fields, widget.NewFormItem("Generated Image", widget.NewLabel(clusterBuilder.Image)))
 	fields = append(fields, widget.NewFormItem("Stack Used", widget.NewLabel(clusterBuilder.Stack)))
 	fields = append(fields, widget.NewFormItem("Store Used", widget.NewLabel(clusterBuilder.Store)))
-	fields = append(fields, widget.NewFormItem("Built?", widget.NewLabel(builtText(clusterBuilder))))
+	fields = append(fields, widget.NewFormItem("Last Build Successful", widget.NewLabel(builtText(clusterBuilder))))
 
 	var buildpacks []*widget.FormItem
 	for _, buildpack := range clusterBuilder.Buildpacks {
@@ -43,5 +43,3 @@ func builtText(builder *kpack.ClusterBuilder) string {
 	}
 	return "Failed"
 }
-
-

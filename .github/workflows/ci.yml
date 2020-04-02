@@ -32,4 +32,4 @@ jobs:
     - name: install opengl
       run: sudo apt install libgl1-mesa-dev xorg-dev
     - name: Run tests
-      run: go test -v ./...
+      run: make unit-test-go

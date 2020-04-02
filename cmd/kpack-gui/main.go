@@ -19,10 +19,9 @@ func main() {
 	//mainView := gui.NewKpackMainView(contextGetter, stubbedConnectionManager())
 
 	//gui.FyneDemo(a)
-	var contextView fyne.Window
-	contextView = gui.SelectContext(a, contextGetter, func(context string) {
+	gui.SelectContext(a, contextGetter, func(context string, window fyne.Window) {
 		mainView.LoadUI(a, context, func() {
-			contextView.Show() // SegFault........
+			window.Show() // SegFault........
 		})
 	}, gui.ErrorContainer)
 }
